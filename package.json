@@ -1,0 +1,20 @@
+{
+	"name": "vdo-ninja",
+	"version": "1.0.0",
+	"api_version": "1.0.0",
+	"keywords": [
+		"Video"
+	],
+	"manufacturer": "VDO",
+	"product": "Ninja",
+	"shortname": "VDO.Ninja",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "Bryce Seifert",
+	"license": "MIT",
+	"dependencies": {
+		"ws": "^7.2.1"
+	}
+}
