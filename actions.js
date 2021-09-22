@@ -3,9 +3,9 @@ module.exports = {
 		let actions = {}
 
 		let mutableChoices = [
+			{ id: 'toggle', label: 'Toggle' },
 			{ id: 'true', label: 'Unmute' },
 			{ id: 'false', label: 'Mute' },
-			{ id: 'toggle', label: 'Toggle' },
 		]
 
 		actions['mic'] = {
@@ -15,7 +15,7 @@ module.exports = {
 					type: 'dropdown',
 					label: 'Action',
 					id: 'value',
-					default: 'true',
+					default: 'toggle',
 					choices: mutableChoices,
 					required: true,
 				},
@@ -29,7 +29,7 @@ module.exports = {
 					type: 'dropdown',
 					label: 'Action',
 					id: 'value',
-					default: 'true',
+					default: 'toggle',
 					choices: mutableChoices,
 					required: true,
 				},
@@ -59,7 +59,7 @@ module.exports = {
 					type: 'dropdown',
 					label: 'Action',
 					id: 'value',
-					default: 'true',
+					default: 'toggle',
 					choices: mutableChoices,
 					required: true,
 				},
