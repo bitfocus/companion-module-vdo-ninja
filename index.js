@@ -196,6 +196,11 @@ class instance extends instance_skel {
 				target = opt.target
 				value = opt.value
 				break
+			case 'guestGroup':
+				action = 'group'
+				target = opt.target
+				value = opt.value
+				break
 			case 'guestAddScene':
 				action = 'addScene'
 				target = opt.target
