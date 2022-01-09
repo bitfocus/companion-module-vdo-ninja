@@ -35,10 +35,6 @@ class instance extends instance_skel {
 			this.ws.close(1000)
 			delete this.ws
 		}
-		if (this.pollAPI) {
-			clearInterval(this.pollAPI)
-			delete this.pollAPI
-		}
 	}
 
 	updateConfig(config) {
@@ -46,23 +42,8 @@ class instance extends instance_skel {
 		this.initWebSocket()
 	}
 
-	retrySocket = () => {
-		try {
-			// readyState 2 = CLOSING, readyState 3 = CLOSED
-			if (!this.ws || this.ws.readyState == 2 || this.ws.readyState == 3) {
-				initWebSocket()
-			}
-			// readyState 1 = OPEN
-			else if (this.ws.readyState == 1) {
-				this.ws.send(`{"join": "${this.config.apiID}" }`)
-			}
-		} catch (err) {
-			this.debug('Error with handling socket' + JSON.stringify(err))
-		}
-	}
-
 	initWebSocket() {
-		this.status(this.STATUS_UNKNOWN)
+		clearInterval(this.reconnect)
 
 		if (this.ws !== undefined) {
 			this.ws.close(1000)
@@ -72,28 +53,33 @@ class instance extends instance_skel {
 		this.ws = new WebSocket(`wss://api.vdo.ninja:443`)
 
 		this.ws.on('open', () => {
-			this.log('info', `Connection opened to VDO.Ninja`)
+			if (this.currentStatus != 0) {
+				this.log('info', `Connection opened to VDO.Ninja`)
+			}
 			this.status(this.STATUS_OK)
 			if (this.config.apiID) {
 				this.ws.send(`{"join": "${this.config.apiID}" }`)
 			} else {
 				this.log('warn', `API ID required to connect to VDO.Ninja, please add one in the module settings`)
+				this.status(this.STATUS_WARNING, 'Missing API ID')
 			}
-			this.pollAPI = setInterval(this.retrySocket, 15000)
-			this.retrySocket()
 		})
 
 		this.ws.on('close', (code) => {
 			if (code !== 1000) {
-				this.log('error', `Connection closed with code ${code}`)
-				this.status(this.STATUS_ERROR)
+				this.debug('error', `Websocket closed:  ${code}`)
+				this.reconnect = setInterval(() => {
+					this.initWebSocket()
+				}, 500)
 			}
 		})
 
 		this.ws.on('message', this.messageReceivedFromWebSocket.bind(this))
 
 		this.ws.on('error', (data) => {
-			this.log('error', `WebSocket error: ${data}`)
+			this.status(this.STATUS_ERROR)
+			this.log('error', `WebSocket ${data}`)
+			this.ws.close()
 		})
 	}
 
@@ -193,6 +179,11 @@ class instance extends instance_skel {
 				break
 			case 'guestForward':
 				action = 'forward'
+				target = opt.target
+				value = opt.value
+				break
+			case 'guestGroup':
+				action = 'group'
 				target = opt.target
 				value = opt.value
 				break

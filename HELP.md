@@ -32,6 +32,7 @@ Control [VDO.Ninja](https://vdo.ninja) stream settings remotely.
 - Room Guest: Mic Volume
 - Room Guest: Hang Up
 - Room Guest: Transfer
+- Room Guest: Add/Remove Group
 - Room Guest: Add to Scene
 - Room Guest: Mute Guest in Scene
 - Room Guest: Blind/Un-Blind Guest

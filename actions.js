@@ -253,8 +253,28 @@ module.exports = {
 			],
 		}
 
+		actions['guestGroup'] = {
+			label: 'Room Guest: Add/Remove Group',
+			options: [
+				{
+					type: 'textinput',
+					label: 'Guest (number or stream ID)',
+					id: 'target',
+					default: '1',
+					required: true,
+				},
+				{
+					type: 'textinput',
+					label: 'Group Number (1 to 8)',
+					id: 'value',
+					default: '1',
+					required: true,
+				},
+			],
+		}
+
 		actions['guestAddScene'] = {
-			label: 'Room Guest: Add to Scene',
+			label: 'Room Guest: Add/Remove Scene',
 			options: [
 				{
 					type: 'textinput',
@@ -307,7 +327,7 @@ module.exports = {
 		}
 
 		actions['guestSoloVideo'] = {
-			label: 'Room Guest: Highlight Guest',
+			label: 'Room Guest: Toggle Highlight Guest',
 			options: [
 				{
 					type: 'textinput',
