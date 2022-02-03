@@ -16,5 +16,13 @@
 	"license": "MIT",
 	"dependencies": {
 		"ws": "^7.2.1"
+	},
+	"homepage": "https://github.com/bitfocus/companion-module-vdo-ninja#readme",
+	"bugs": {
+		"url": "https://github.com/bitfocus/companion-module-vdo-ninja/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/bitfocus/companion-module-vdo-ninja.git"
 	}
 }
