@@ -1,4 +1,4 @@
-var instance_skel = require('../../instance_skel')
+const instance_skel = require('../../instance_skel')
 const actions = require('./actions')
 
 const WebSocket = require('ws')
@@ -35,6 +35,9 @@ class instance extends instance_skel {
 			this.ws.close(1000)
 			delete this.ws
 		}
+		if (this.reconnect) {
+			clearInterval(this.reconnect)
+		}
 	}
 
 	updateConfig(config) {
@@ -43,7 +46,9 @@ class instance extends instance_skel {
 	}
 
 	initWebSocket() {
-		clearInterval(this.reconnect)
+		if (this.reconnect) {
+			clearInterval(this.reconnect)
+		}
 
 		if (this.ws !== undefined) {
 			this.ws.close(1000)
@@ -68,17 +73,23 @@ class instance extends instance_skel {
 		this.ws.on('close', (code) => {
 			if (code !== 1000) {
 				this.debug('error', `Websocket closed:  ${code}`)
-				this.reconnect = setInterval(() => {
-					this.initWebSocket()
-				}, 500)
 			}
+			this.reconnect = setInterval(() => {
+				this.initWebSocket()
+			}, 1000)
 		})
 
 		this.ws.on('message', this.messageReceivedFromWebSocket.bind(this))
 
 		this.ws.on('error', (data) => {
-			this.status(this.STATUS_ERROR)
-			this.log('error', `WebSocket ${data}`)
+			if (this.currentStatus != 2) {
+				this.status(this.STATUS_ERROR)
+				if (data?.code == 'ENOTFOUND') {
+					this.log('error', `Unable to reach api.vdo.ninja`)
+				} else {
+					this.log('error', `WebSocket ${data}`)
+				}
+			}
 			this.ws.close()
 		})
 	}
