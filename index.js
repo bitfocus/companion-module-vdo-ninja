@@ -95,7 +95,7 @@ class instance extends instance_skel {
 	}
 
 	messageReceivedFromWebSocket(data) {
-		this.log('debug', `Message received: ${data}`)
+		this.debug(`Message received: ${data}`)
 	}
 
 	config_fields() {
