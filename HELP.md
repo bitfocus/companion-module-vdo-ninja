@@ -4,7 +4,7 @@ Control [VDO.Ninja](https://vdo.ninja) stream settings remotely.
 
 ### Configuration
 
-- Use VDO.Ninja 19 or above
+- Use VDO.Ninja 22 or above
 - Add an API ID as a URL parameter (ex. `&api=xxxxxx`) to your VDO.Ninja link
 - Enter the same API ID in the module settings
 
@@ -17,8 +17,8 @@ Control [VDO.Ninja](https://vdo.ninja) stream settings remotely.
 - Speaker Volume
 - Camera Control
 - Record Local Video
-- Reload Current Page
-- Hang Up Current Connection
+- Reload
+- Hang Up
 - Send Chat Message
 - Set Bitrate
 - Set Panning
@@ -33,7 +33,19 @@ Control [VDO.Ninja](https://vdo.ninja) stream settings remotely.
 - Room Guest: Hang Up
 - Room Guest: Transfer
 - Room Guest: Add/Remove Group
-- Room Guest: Add to Scene
+- Room Guest: Add/Remove Scene
 - Room Guest: Mute Guest in Scene
 - Room Guest: Blind/Un-Blind Guest
 - Room Guest: Highlight Guest
+
+### Available Feedbacks
+
+- Mic Status
+- Camera Status
+- Speaker Status
+
+### Available Variables
+
+- mic (Current mute status, either by stream ID or guest position)
+- camera (Current camera status, either by stream ID or guest position)
+- speaker (Available for the "Director" role only)
