@@ -1,15 +1,17 @@
-exports.initFeedbacks = function () {
+import { combineRgb } from '@companion-module/base'
+
+export function getFeedbacks() {
 	const feedbacks = {}
 
-	const ColorWhite = this.rgb(255, 255, 255)
-	const ColorBlack = this.rgb(0, 0, 0)
-	const ColorRed = this.rgb(200, 0, 0)
-	const ColorGreen = this.rgb(0, 200, 0)
-	const ColorOrange = this.rgb(255, 102, 0)
+	const ColorWhite = combineRgb(255, 255, 255)
+	const ColorBlack = combineRgb(0, 0, 0)
+	const ColorRed = combineRgb(200, 0, 0)
+	const ColorGreen = combineRgb(0, 200, 0)
+	const ColorOrange = combineRgb(255, 102, 0)
 
 	feedbacks['mic'] = {
 		type: 'boolean',
-		label: 'Mic Status',
+		name: 'Mic Status',
 		description: 'If mic matches the selected state, change the style of the button',
 		options: [
 			{
@@ -31,7 +33,7 @@ exports.initFeedbacks = function () {
 				],
 			},
 		],
-		style: {
+		defaultStyle: {
 			color: ColorWhite,
 			bgcolor: ColorGreen,
 		},
@@ -59,7 +61,7 @@ exports.initFeedbacks = function () {
 	}
 	feedbacks['camera'] = {
 		type: 'boolean',
-		label: 'Camera Status',
+		name: 'Camera Status',
 		description: 'If camera matches the selected state, change the style of the button',
 		options: [
 			{
@@ -80,7 +82,7 @@ exports.initFeedbacks = function () {
 				],
 			},
 		],
-		style: {
+		defaultStyle: {
 			color: ColorWhite,
 			bgcolor: ColorGreen,
 		},
@@ -88,7 +90,7 @@ exports.initFeedbacks = function () {
 			if (this.states[feedback.options.stream]?.position) {
 				if (feedback.options.state) {
 					if (
-						this.states[feedback.options.stream]?.others['hide-guest'] ||
+						this.states[feedback.options.stream]?.others['hide-guest'] == 1 ||
 						this.states[feedback.options.stream]?.videoMuted
 					) {
 						return true
@@ -108,7 +110,7 @@ exports.initFeedbacks = function () {
 	}
 	feedbacks['speaker'] = {
 		type: 'boolean',
-		label: 'Speaker Status',
+		name: 'Speaker Status',
 		description: 'If speaker matches the selected state, change the style of the button',
 		options: [
 			{
@@ -129,7 +131,7 @@ exports.initFeedbacks = function () {
 				],
 			},
 		],
-		style: {
+		defaultStyle: {
 			color: ColorWhite,
 			bgcolor: ColorGreen,
 		},

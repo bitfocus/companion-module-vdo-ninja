@@ -1,46 +1,33 @@
-const instance_skel = require('../../instance_skel')
-const actions = require('./actions')
-const presets = require('./presets')
-const { updateVariableDefinitions, updateVariables } = require('./variables')
-const { initFeedbacks } = require('./feedbacks')
-const WebSocket = require('ws')
+import { InstanceBase, runEntrypoint } from '@companion-module/base'
+import { getActions } from './actions.js'
+import { getPresets } from './presets.js'
+import { getVariables, updateVariables } from './variables.js'
+import { getFeedbacks } from './feedbacks.js'
 
-let debug
-let log
+import WebSocket from 'ws'
 
-class instance extends instance_skel {
-	constructor(system, id, config) {
-		super(system, id, config)
+class VDONinjaInstance extends InstanceBase {
+	constructor(internal) {
+		super(internal)
 
-		Object.assign(this, {
-			...actions,
-			...presets,
-		})
-
-		this.updateVariableDefinitions = updateVariableDefinitions
 		this.updateVariables = updateVariables
-
-		return this
 	}
 
-	init() {
-		debug = this.debug
-		log = this.log
+	async init(config) {
+		this.updateStatus('connecting')
 
-		this.status(this.STATUS_WARNING, 'Connecting')
+		this.config = config
 
-		if (!this.config) {
-			return this
-		}
+		this.connected = null
 		this.states = {}
 		this.streams = []
 		this.initWebSocket()
-		this.actions()
+		this.initActions()
 		this.initFeedbacks()
 		this.initVariables()
 	}
 
-	destroy() {
+	async destroy() {
 		this.states = {}
 		this.streams = []
 		if (this.ws !== undefined) {
@@ -52,9 +39,40 @@ class instance extends instance_skel {
 		}
 	}
 
-	updateConfig(config) {
+	getConfigFields() {
+		return [
+			{
+				type: 'textinput',
+				id: 'apiID',
+				label: 'API ID',
+				width: 6,
+			},
+		]
+	}
+
+	async configUpdated(config) {
 		this.config = config
 		this.initWebSocket()
+	}
+
+	initVariables() {
+		const variables = getVariables.bind(this)()
+		this.setVariableDefinitions(variables)
+	}
+
+	initFeedbacks() {
+		const feedbacks = getFeedbacks.bind(this)()
+		this.setFeedbackDefinitions(feedbacks)
+	}
+
+	initPresets() {
+		const presets = getPresets.bind(this)()
+		this.setPresetDefinitions(presets)
+	}
+
+	initActions() {
+		const actions = getActions.bind(this)()
+		this.setActionDefinitions(actions)
 	}
 
 	initWebSocket() {
@@ -70,22 +88,24 @@ class instance extends instance_skel {
 		this.ws = new WebSocket(`wss://api.vdo.ninja:443`)
 
 		this.ws.on('open', () => {
-			if (this.currentStatus != 0) {
+			if (!this.connected) {
 				this.log('info', `Connection opened to VDO.Ninja`)
+				this.connected = true
 			}
-			this.status(this.STATUS_OK)
+			this.updateStatus('ok')
 			if (this.config.apiID) {
 				this.ws.send(`{"join": "${this.config.apiID}" }`)
 				this.ws.send(`{"action": "getDetails"}`)
 			} else {
 				this.log('warn', `API ID required to connect to VDO.Ninja, please add one in the module settings`)
-				this.status(this.STATUS_WARNING, 'Missing API ID')
+				this.updateStatus('bad_config', 'Missing API ID')
 			}
 		})
 
 		this.ws.on('close', (code) => {
 			if (code !== 1000 && code !== 1006) {
-				this.debug('error', `Websocket closed:  ${code}`)
+				this.connected = false
+				this.log('debug', `Websocket closed:  ${code}`)
 			}
 			this.reconnect = setInterval(() => {
 				this.initWebSocket()
@@ -95,20 +115,22 @@ class instance extends instance_skel {
 		this.ws.on('message', this.messageReceivedFromWebSocket.bind(this))
 
 		this.ws.on('error', (data) => {
-			if (this.currentStatus != 2) {
-				this.status(this.STATUS_ERROR)
+			if (this.connected !== false) {
+				this.connected = false
+				this.updateStatus('connection_failure')
 				if (data?.code == 'ENOTFOUND') {
 					this.log('error', `Unable to reach api.vdo.ninja`)
 				} else {
 					this.log('error', `WebSocket ${data}`)
 				}
 			}
-			this.ws.close()
+			if (this.ws !== undefined) {
+				this.ws.close()
+			}
 		})
 	}
 
 	messageReceivedFromWebSocket(data) {
-		this.debug(`Message received: ${data}`)
 		let message = JSON.parse(data)
 		if (message?.callback) {
 			let callback = message.callback
@@ -164,14 +186,14 @@ class instance extends instance_skel {
 					return o.id === data.streamID
 				})
 				this.streams.splice(index, 1)
-				this.actions()
+				this.initActions()
 				this.initVariables()
 				this.initFeedbacks()
 			} else if (data.action === 'newViewConnection') {
 				//this.ws.send(`{"action": "getDetails"}`)
 			} else if (data.action === 'director') {
 				this.states[data.streamID][data.action] = data.value
-				this.actions()
+				this.initActions()
 				this.initVariables()
 				this.initFeedbacks()
 			} else if (data.action === 'endViewConnection' && data.value) {
@@ -180,7 +202,7 @@ class instance extends instance_skel {
 					return o.id === data.value
 				})
 				this.streams.splice(index, 1)
-				this.actions()
+				this.initActions()
 				this.initVariables()
 				this.initFeedbacks()
 			} else if (data.action === 'positionChange') {
@@ -198,39 +220,10 @@ class instance extends instance_skel {
 			}
 			this.updateVariables()
 			this.checkFeedbacks()
-			this.debug(this.states)
 		}
 		if (data.action === 'seeding' || (data.action === 'tracksAdded' && data.value)) {
 			this.ws.send(`{"action": "getDetails"}`)
 		}
-	}
-
-	config_fields() {
-		return [
-			{
-				type: 'textinput',
-				id: 'apiID',
-				label: 'API ID',
-				width: 6,
-			},
-		]
-	}
-
-	actions(system) {
-		this.setActions(this.getActions())
-	}
-
-	initFeedbacks() {
-		const feedbacks = initFeedbacks.bind(this)()
-		this.setFeedbackDefinitions(feedbacks)
-	}
-
-	initVariables() {
-		this.updateVariableDefinitions()
-	}
-
-	initPresets() {
-		this.setPresetDefinitions(this.getPresets())
 	}
 
 	sendRequest(action, target, value) {
@@ -240,8 +233,7 @@ class instance extends instance_skel {
 			value: value ? value : 'null',
 		}
 		this.ws.send(JSON.stringify(object))
-		this.debug('Sending:', JSON.stringify(object))
 	}
 }
 
-exports = module.exports = instance
+runEntrypoint(VDONinjaInstance, [])
