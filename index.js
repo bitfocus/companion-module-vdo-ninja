@@ -79,55 +79,55 @@ class VDONinjaInstance extends InstanceBase {
 		if (this.reconnect) {
 			clearInterval(this.reconnect)
 		}
-
-		if (this.ws !== undefined) {
-			this.ws.close(1000)
-			delete this.ws
-		}
-
-		this.ws = new WebSocket(`wss://api.vdo.ninja:443`)
-
-		this.ws.on('open', () => {
-			if (!this.connected) {
-				this.log('info', `Connection opened to VDO.Ninja`)
-				this.connected = true
+		if (this.config.apiID) {
+			if (this.ws !== undefined) {
+				this.ws.close(1000)
+				delete this.ws
 			}
-			this.updateStatus('ok')
-			if (this.config.apiID) {
+
+			this.ws = new WebSocket(`wss://api.vdo.ninja:443`)
+
+			this.ws.on('open', () => {
+				if (!this.connected) {
+					this.log('info', `Connection opened to VDO.Ninja`)
+					this.connected = true
+				}
+				this.updateStatus('ok')
+
 				this.ws.send(`{"join": "${this.config.apiID}" }`)
 				this.ws.send(`{"action": "getDetails"}`)
-			} else {
-				this.log('warn', `API ID required to connect to VDO.Ninja, please add one in the module settings`)
-				this.updateStatus('bad_config', 'Missing API ID')
-			}
-		})
+			})
 
-		this.ws.on('close', (code) => {
-			if (code !== 1000 && code !== 1006) {
-				this.connected = false
-				this.log('debug', `Websocket closed:  ${code}`)
-			}
-			this.reconnect = setInterval(() => {
-				this.initWebSocket()
-			}, 1000)
-		})
-
-		this.ws.on('message', this.messageReceivedFromWebSocket.bind(this))
-
-		this.ws.on('error', (data) => {
-			if (this.connected !== false) {
-				this.connected = false
-				this.updateStatus('connection_failure')
-				if (data?.code == 'ENOTFOUND') {
-					this.log('error', `Unable to reach api.vdo.ninja`)
-				} else {
-					this.log('error', `WebSocket ${data}`)
+			this.ws.on('close', (code) => {
+				if (code !== 1000 && code !== 1006) {
+					this.connected = false
+					this.log('debug', `Websocket closed:  ${code}`)
 				}
-			}
-			if (this.ws !== undefined) {
-				this.ws.close()
-			}
-		})
+				this.reconnect = setInterval(() => {
+					this.initWebSocket()
+				}, 1000)
+			})
+
+			this.ws.on('message', this.messageReceivedFromWebSocket.bind(this))
+
+			this.ws.on('error', (data) => {
+				if (this.connected !== false) {
+					this.connected = false
+					this.updateStatus('connection_failure')
+					if (data?.code == 'ENOTFOUND') {
+						this.log('error', `Unable to reach api.vdo.ninja`)
+					} else {
+						this.log('error', `WebSocket ${data}`)
+					}
+				}
+				if (this.ws !== undefined) {
+					this.ws.close()
+				}
+			})
+		} else {
+			this.log('warn', `API ID required to connect to VDO.Ninja, please add one in the module settings`)
+			this.updateStatus('bad_config', 'Missing API ID')
+		}
 	}
 
 	messageReceivedFromWebSocket(data) {
