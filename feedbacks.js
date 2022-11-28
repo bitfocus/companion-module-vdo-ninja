@@ -40,19 +40,16 @@ export function getFeedbacks() {
 		callback: (feedback) => {
 			if (this.states[feedback.options.stream]?.position) {
 				if (feedback.options.state) {
-					if (
-						this.states[feedback.options.stream]?.others['mute-guest'] ||
-						this.states[feedback.options.stream]?.muted
-					) {
+					if (this.states[feedback.options.stream]?.others['mute-guest'] === 1) {
 						return true
+					} else {
+						return this.states[feedback.options.stream]?.muted
 					}
 				} else {
-					if (
-						this.states[feedback.options.stream]?.others['mute-guest'] === 0 &&
-						this.states[feedback.options.stream]?.muted === false
-					) {
-						return true
+					if (this.states[feedback.options.stream]?.others['mute-guest'] === 1) {
+						return false
 					}
+					return this.states[feedback.options.stream]?.muted === feedback.options.state
 				}
 			} else {
 				return this.states[feedback.options.stream]?.muted === feedback.options.state
@@ -89,19 +86,16 @@ export function getFeedbacks() {
 		callback: (feedback) => {
 			if (this.states[feedback.options.stream]?.position) {
 				if (feedback.options.state) {
-					if (
-						this.states[feedback.options.stream]?.others['hide-guest'] == 1 ||
-						this.states[feedback.options.stream]?.videoMuted
-					) {
+					if (this.states[feedback.options.stream]?.others['hide-guest'] === 1) {
 						return true
+					} else {
+						return this.states[feedback.options.stream]?.videoMuted
 					}
 				} else {
-					if (
-						this.states[feedback.options.stream]?.others['hide-guest'] === 0 &&
-						this.states[feedback.options.stream]?.videoMuted === false
-					) {
-						return true
+					if (this.states[feedback.options.stream]?.others['hide-guest'] === 1) {
+						return false
 					}
+					return this.states[feedback.options.stream]?.videoMuted === feedback.options.state
 				}
 			} else {
 				return this.states[feedback.options.stream]?.videoMuted === feedback.options.state

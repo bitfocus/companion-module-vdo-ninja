@@ -176,6 +176,8 @@ class VDONinjaInstance extends InstanceBase {
 			this.updateVariables()
 			this.initPresets()
 		}
+		this.checkFeedbacks()
+		this.updateVariables()
 	}
 
 	processUpdate(data) {
@@ -190,7 +192,7 @@ class VDONinjaInstance extends InstanceBase {
 				this.initVariables()
 				this.initFeedbacks()
 			} else if (data.action === 'newViewConnection') {
-				//this.ws.send(`{"action": "getDetails"}`)
+				this.ws.send(`{"action": "getDetails"}`)
 			} else if (data.action === 'director') {
 				this.states[data.streamID][data.action] = data.value
 				this.initActions()
