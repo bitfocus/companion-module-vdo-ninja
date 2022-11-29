@@ -1,28 +1,21 @@
 {
 	"name": "vdo-ninja",
-	"version": "1.1.0",
-	"api_version": "1.0.0",
-	"keywords": [
-		"Video"
-	],
-	"manufacturer": "VDO",
-	"product": "Ninja",
-	"shortname": "VDO.Ninja",
+	"version": "2.0.0",
 	"main": "index.js",
+	"type": "module",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
-	"author": "Bryce Seifert",
 	"license": "MIT",
 	"dependencies": {
-		"ws": "^7.5.9"
-	},
-	"homepage": "https://github.com/bitfocus/companion-module-vdo-ninja#readme",
-	"bugs": {
-		"url": "https://github.com/bitfocus/companion-module-vdo-ninja/issues"
+		"@companion-module/base": "~0.6.1",
+		"ws": "^8.11.0"
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/bitfocus/companion-module-vdo-ninja.git"
+	},
+	"devDependencies": {
+		"@companion-module/tools": "^0.4.1"
 	}
 }

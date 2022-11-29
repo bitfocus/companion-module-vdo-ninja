@@ -1,4 +1,4 @@
-exports.updateVariableDefinitions = function () {
+export function getVariables() {
 	const variables = []
 
 	for (let x in this.states) {
@@ -7,39 +7,39 @@ exports.updateVariableDefinitions = function () {
 
 		if (data.streamID) {
 			if (data.director) {
-				variables.push({ name: `director_mic`, label: `Director - Mic` })
-				variables.push({ name: `director_camera`, label: `Director - Camera` })
-				variables.push({ name: `director_speaker`, label: `Director - Speaker` })
+				variables.push({ variableId: `director_mic`, name: `Director - Mic` })
+				variables.push({ variableId: `director_camera`, name: `Director - Camera` })
+				variables.push({ variableId: `director_speaker`, name: `Director - Speaker` })
 			} else if (data.position) {
-				variables.push({ name: `guest_${data.position}_mic`, label: `Guest ${data.position} ${name} - Mic` })
-				variables.push({ name: `guest_${data.position}_camera`, label: `Guest ${data.position} ${name} - Camera` })
+				variables.push({ variableId: `guest_${data.position}_mic`, name: `Guest ${data.position} ${name} - Mic` })
+				variables.push({ variableId: `guest_${data.position}_camera`, name: `Guest ${data.position} ${name} - Camera` })
 			} else {
-				variables.push({ name: `${data.streamID}_mic`, label: `${data.streamID} ${name} - Mic` })
-				variables.push({ name: `${data.streamID}_camera`, label: `${data.streamID} ${name} - Camera` })
+				variables.push({ variableId: `${data.streamID}_mic`, name: `${data.streamID} ${name} - Mic` })
+				variables.push({ variableId: `${data.streamID}_camera`, name: `${data.streamID} ${name} - Camera` })
 			}
 		}
 	}
-	this.setVariableDefinitions(variables)
+	return variables
 }
 
-exports.updateVariables = function () {
+export function updateVariables() {
 	for (let x in this.states) {
 		let data = this.states[x]
 
 		if (data.streamID) {
 			if (data.director) {
-				this.setVariables({
+				this.setVariableValues({
 					director_mic: data.muted ? 'Muted' : 'Unmuted',
 					director_camera: data.videoMuted ? 'Muted' : 'Unmuted',
 					director_speaker: data.speakerMuted ? 'Muted' : 'Unmuted',
 				})
 			} else if (data.position) {
-				this.setVariables({
-					[`guest_${data.position}_mic`]: data.muted || data.others['mute-guest'] ? 'Muted' : 'Unmuted',
-					[`guest_${data.position}_camera`]: data.videoMuted || data.others['hide-guest'] ? 'Muted' : 'Unmuted',
+				this.setVariableValues({
+					[`guest_${data.position}_mic`]: data.muted || data.others['mute-guest'] == 1 ? 'Muted' : 'Unmuted',
+					[`guest_${data.position}_camera`]: data.videoMuted || data.others['hide-guest'] == 1 ? 'Muted' : 'Unmuted',
 				})
 			} else {
-				this.setVariables({
+				this.setVariableValues({
 					[`${data.streamID}_mic`]: data.muted ? 'Muted' : 'Unmuted',
 					[`${data.streamID}_camera`]: data.videoMuted ? 'Muted' : 'Unmuted',
 				})

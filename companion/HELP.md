@@ -1,11 +1,11 @@
 ## VDO.Ninja
 
-Control [VDO.Ninja](https://vdo.ninja) stream settings remotely.
+Control [VDO.Ninja](https://vdo.ninja) settings remotely.
 
-### Configuration
+### Getting Started
 
-- Use VDO.Ninja 22 or above
-- Add an API ID as a URL parameter (ex. `&api=xxxxxx`) to your VDO.Ninja link
+- Ensure you are using VDO.Ninja 22 or above
+- Add an API ID as a URL parameter (ex. `&api=xxxxxx`) to your VDO.Ninja URL
 - Enter the same API ID in the module settings
 
 ### Available Actions

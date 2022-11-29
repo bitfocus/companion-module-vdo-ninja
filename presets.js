@@ -1,29 +1,32 @@
-exports.getPresets = function () {
-	let presets = []
+import { combineRgb } from '@companion-module/base'
 
-	const ColorWhite = this.rgb(255, 255, 255)
-	const ColorBlack = this.rgb(0, 0, 0)
-	const ColorRed = this.rgb(200, 0, 0)
-	const ColorGreen = this.rgb(0, 200, 0)
-	const ColorYellow = this.rgb(212, 174, 0)
+export function getPresets() {
+	let presets = {}
+
+	const ColorWhite = combineRgb(255, 255, 255)
+	const ColorBlack = combineRgb(0, 0, 0)
+	const ColorRed = combineRgb(200, 0, 0)
+	const ColorGreen = combineRgb(0, 200, 0)
+	const ColorYellow = combineRgb(212, 174, 0)
 
 	for (let s in this.states) {
 		let stream = this.states[s]
 
 		if (stream.position) {
-			presets.push({
+			presets[`guest_${stream.position}_mic`] = {
+				type: 'button',
 				category: 'Guest Actions',
-				label: stream.streamID,
-				bank: {
-					style: 'text',
+				name: `guest_${stream.position}_mic`,
+				options: {},
+				style: {
 					text: `Guest ${stream.position}\\nMic\\n$(VDO.Ninja:guest_${stream.position}_mic)`,
 					size: 'auto',
 					color: ColorWhite,
-					bgcolor: 0,
+					bgcolor: ColorBlack,
 				},
 				feedbacks: [
 					{
-						type: 'mic',
+						feedbackId: 'mic',
 						options: {
 							stream: stream.streamID,
 							state: false,
@@ -34,29 +37,35 @@ exports.getPresets = function () {
 						},
 					},
 				],
-				actions: [
+				steps: [
 					{
-						action: 'guestMic',
-						options: {
-							target: stream.position,
-							value: 'toggle',
-						},
+						down: [
+							{
+								actionId: 'guestMic',
+								options: {
+									target: stream.position,
+									value: 'toggle',
+								},
+							},
+						],
+						up: [],
 					},
 				],
-			})
-			presets.push({
+			}
+			presets[`guest_${stream.position}_camera`] = {
+				type: 'button',
 				category: 'Guest Actions',
-				label: stream.streamID,
-				bank: {
-					style: 'text',
+				name: `guest_${stream.position}_camera`,
+				options: {},
+				style: {
 					text: `Guest ${stream.position}\\nCamera\\n$(VDO.Ninja:guest_${stream.position}_camera)`,
 					size: 'auto',
 					color: ColorWhite,
-					bgcolor: 0,
+					bgcolor: ColorBlack,
 				},
 				feedbacks: [
 					{
-						type: 'camera',
+						feedbackId: 'camera',
 						options: {
 							stream: stream.streamID,
 							state: false,
@@ -67,21 +76,28 @@ exports.getPresets = function () {
 						},
 					},
 				],
-			})
+				steps: [
+					{
+						down: [],
+						up: [],
+					},
+				],
+			}
 		} else if (stream.director) {
-			presets.push({
+			presets[`director_mic`] = {
+				type: 'button',
 				category: 'Director Actions',
-				label: stream.streamID,
-				bank: {
-					style: 'text',
+				name: stream.streamID,
+				options: {},
+				style: {
 					text: `Director\\nMic\\n$(VDO.Ninja:director_mic)`,
 					size: 'auto',
 					color: ColorWhite,
-					bgcolor: 0,
+					bgcolor: ColorBlack,
 				},
 				feedbacks: [
 					{
-						type: 'mic',
+						feedbackId: 'mic',
 						options: {
 							stream: stream.streamID,
 							state: false,
@@ -92,28 +108,34 @@ exports.getPresets = function () {
 						},
 					},
 				],
-				actions: [
+				steps: [
 					{
-						action: 'mic',
-						options: {
-							value: 'toggle',
-						},
+						down: [
+							{
+								actionId: 'mic',
+								options: {
+									value: 'toggle',
+								},
+							},
+						],
+						up: [],
 					},
 				],
-			})
-			presets.push({
+			}
+			presets[`director_camera`] = {
+				type: 'button',
 				category: 'Director Actions',
-				label: stream.streamID,
-				bank: {
-					style: 'text',
+				name: stream.streamID,
+				options: {},
+				style: {
 					text: `Director\\nCamera\\n$(VDO.Ninja:director_camera)`,
 					size: 'auto',
 					color: ColorWhite,
-					bgcolor: 0,
+					bgcolor: ColorBlack,
 				},
 				feedbacks: [
 					{
-						type: 'camera',
+						feedbackId: 'camera',
 						options: {
 							stream: stream.streamID,
 							state: false,
@@ -124,28 +146,34 @@ exports.getPresets = function () {
 						},
 					},
 				],
-				actions: [
+				steps: [
 					{
-						action: 'camera',
-						options: {
-							value: 'toggle',
-						},
+						down: [
+							{
+								actionId: 'camera',
+								options: {
+									value: 'toggle',
+								},
+							},
+						],
+						up: [],
 					},
 				],
-			})
-			presets.push({
+			}
+			presets[`director_speaker`] = {
+				type: 'button',
 				category: 'Director Actions',
-				label: stream.streamID,
-				bank: {
-					style: 'text',
+				name: stream.streamID,
+				options: {},
+				style: {
 					text: `Director\\nSpeaker\\n$(VDO.Ninja:director_speaker)`,
 					size: 'auto',
 					color: ColorWhite,
-					bgcolor: 0,
+					bgcolor: ColorBlack,
 				},
 				feedbacks: [
 					{
-						type: 'speaker',
+						feedbackId: 'speaker',
 						options: {
 							stream: stream.streamID,
 							state: false,
@@ -156,15 +184,20 @@ exports.getPresets = function () {
 						},
 					},
 				],
-				actions: [
+				steps: [
 					{
-						action: 'speaker',
-						options: {
-							value: 'toggle',
-						},
+						down: [
+							{
+								actionId: 'speaker',
+								options: {
+									value: 'toggle',
+								},
+							},
+						],
+						up: [],
 					},
 				],
-			})
+			}
 		}
 	}
 
