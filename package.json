@@ -8,7 +8,7 @@
 	},
 	"license": "MIT",
 	"dependencies": {
-		"@companion-module/base": "~0.6.1",
+		"@companion-module/base": "~1.0.2",
 		"ws": "^8.11.0"
 	},
 	"repository": {
