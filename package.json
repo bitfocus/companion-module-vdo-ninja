@@ -4,7 +4,7 @@
 	"main": "index.js",
 	"type": "module",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"format": "prettier -w ."
 	},
 	"license": "MIT",
 	"dependencies": {
@@ -17,5 +17,6 @@
 	},
 	"devDependencies": {
 		"@companion-module/tools": "^0.5.2"
-	}
+	},
+	"prettier": "@companion-module/tools/.prettierrc.json"
 }

@@ -21,10 +21,6 @@
 		"entrypoint": "../index.js"
 	},
 	"manufacturer": "VDO",
-	"products": [
-		"Ninja"
-	],
-	"keywords": [
-		"Video"
-	]
+	"products": ["Ninja"],
+	"keywords": ["Video"]
 }
