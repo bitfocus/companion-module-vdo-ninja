@@ -233,27 +233,7 @@ export function getActions() {
 			}
 		},
 
-		guestOverlay: {
-			name: 'Director: Overlay Message to Guest',
-			description: 'Sends a chat message to a guest and displays it on screen',
-			options: [
-				{
-					type: 'textinput',
-					label: 'Guest (position or stream ID)',
-					id: 'target',
-					default: '1',
-				},
-				{
-					type: 'textinput',
-					label: 'Message',
-					id: 'value',
-					default: '',
-				},
-			],
-			callback: (action) => {
-				this.sendRequest('sendDirectorChat', action.options.target, action.options.value)
-			},
-		},
+
 
 		group: {
 			name: 'Director: Self in Group',
@@ -554,6 +534,28 @@ export function getActions() {
 			],
 			callback: (action) => {
 				this.sendRequest('display', action.options.target)
+			},
+		},
+
+		guestOverlay: {
+			name: 'Director: Overlay Message to Guest',
+			description: 'Sends a chat message to a guest and displays it on screen',
+			options: [
+				{
+					type: 'textinput',
+					label: 'Guest (position or stream ID)',
+					id: 'target',
+					default: '1',
+				},
+				{
+					type: 'textinput',
+					label: 'Message',
+					id: 'value',
+					default: '',
+				},
+			],
+			callback: (action) => {
+				this.sendRequest('sendDirectorChat', action.options.target, action.options.value)
 			},
 		},
 
