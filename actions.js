@@ -5,25 +5,17 @@ export function getActions() {
 		{ id: 'false', label: 'Mute' },
 	]
 
+	let mutableChoices_Highlight = [
+		{ id: 'toggle', label: 'Toggle' },
+		{ id: 'true', label: 'Highlight'},
+		{ id: 'false', label: 'Un-highlight'},
+	]
+
 	let actions = {
-		mic: {
-			name: 'Mic Control',
-			options: [
-				{
-					type: 'dropdown',
-					label: 'Action',
-					id: 'value',
-					default: 'toggle',
-					choices: mutableChoices,
-				},
-			],
-			callback: (action) => {
-				this.sendRequest('mic', null, action.options.value)
-			},
-		},
 
 		speaker: {
-			name: 'Speaker Control',
+			name: 'Local: Speaker Control',
+			description: 'Mute, unmute or toggle the local speaker',
 			options: [
 				{
 					type: 'dropdown',
@@ -38,8 +30,43 @@ export function getActions() {
 			},
 		},
 
+		mic: {
+			name: 'Local: Mic Control',
+			description: 'Mute, unmute or toggle the local microphone',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Action',
+					id: 'value',
+					default: 'toggle',
+					choices: mutableChoices,
+				},
+			],
+			callback: (action) => {
+				this.sendRequest('mic', null, action.options.value)
+			},
+		},
+
+		camera: {
+			name: 'Local: Camera Control',
+			description: 'Mute, unmute or toggle the local camera',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Action',
+					id: 'value',
+					default: 'toggle',
+					choices: mutableChoices,
+				},
+			],
+			callback: (action) => {
+				this.sendRequest('camera', null, action.options.value)
+			},
+		},
+
 		volume: {
-			name: 'Speaker Volume',
+			name: 'Local: Playback Volume',
+			description: 'Sets the playback volume of all local playback audio',
 			options: [
 				{
 					type: 'number',
@@ -56,24 +83,25 @@ export function getActions() {
 			},
 		},
 
-		camera: {
-			name: 'Camera Control',
+		sendChat: {
+			name: 'Local: Send Chat Message',
+			description: 'Sends a chat message to everyone connected',
 			options: [
 				{
-					type: 'dropdown',
-					label: 'Action',
+					type: 'textinput',
+					label: 'Message',
 					id: 'value',
-					default: 'toggle',
-					choices: mutableChoices,
+					default: '',
 				},
 			],
 			callback: (action) => {
-				this.sendRequest('camera', null, action.options.value)
+				this.sendRequest('sendChat', null, action.options.value)
 			},
 		},
 
 		record: {
-			name: 'Record Local Video',
+			name: 'Local: Record Video',
+			description: 'Start/stop recording the local video stream to disk',
 			options: [
 				{
 					type: 'dropdown',
@@ -92,7 +120,8 @@ export function getActions() {
 		},
 
 		reload: {
-			name: 'Reload',
+			name: 'Local: Reload',
+			description: 'Reload the current page',
 			options: [],
 			callback: (action) => {
 				this.sendRequest('reload')
@@ -100,30 +129,17 @@ export function getActions() {
 		},
 
 		hangup: {
-			name: 'Hang Up',
+			name: 'Local: Hang Up',
+			description: 'Hang up the current connection. For directors, this mainly stops microphone and camera',
 			options: [],
 			callback: (action) => {
 				this.sendRequest('hangup')
 			},
 		},
 
-		sendChat: {
-			name: 'Send Chat Message',
-			options: [
-				{
-					type: 'textinput',
-					label: 'Message',
-					id: 'value',
-					default: '',
-				},
-			],
-			callback: (action) => {
-				this.sendRequest('sendChat', null, action.options.value)
-			},
-		},
-
 		bitrate: {
-			name: 'Set Bitrate',
+			name: 'Local: Set Video Bitrate',
+			description: 'Set, reset or pause the bitrate of all incoming video streams',
 			options: [
 				{
 					type: 'dropdown',
@@ -155,7 +171,8 @@ export function getActions() {
 		},
 
 		panning: {
-			name: 'Set Panning',
+			name: 'Local: Set Audio Pan',
+			description: 'Sets the stereo pannning of all incoming audio streams',
 			options: [
 				{
 					type: 'number',
@@ -173,7 +190,8 @@ export function getActions() {
 		},
 
 		togglehand: {
-			name: 'Raise Hand',
+			name: 'Local: Raise Hand',
+			description: 'Toggles whether your hand is raised or not',
 			options: [],
 			callback: (action) => {
 				this.sendRequest('togglehand')
@@ -181,98 +199,184 @@ export function getActions() {
 		},
 
 		togglescreenshare: {
-			name: 'Toggle Screen Share',
+			name: 'Local: Screen Share',
+			description: 'Toggles screen sharing on or off - will prompt you to select the screen',
 			options: [],
 			callback: (action) => {
 				this.sendRequest('togglescreenshare')
 			},
 		},
 
-		guestMic: {
-			name: 'Room Guest: Mute/Unmute Guest',
-			options: [
-				{
-					type: 'textinput',
-					label: 'Guest (position or stream ID)',
-					id: 'target',
-					default: '1',
-				},
-				{
-					type: 'dropdown',
-					label: 'Action',
-					id: 'value',
-					default: 'toggle',
-					choices: mutableChoices,
-				},
-			],
+		forceKeyframe: {
+			name: 'Local: Force Keyframe',
+			description: 'Forces the publisher of a stream to issue keyframes to all viewers',
+			options: [],
 			callback: (action) => {
-				this.sendRequest('mic', action.options.target, action.options.value)
+				this.sendRequest('forceKeyframe')
 			},
 		},
 
-		guestSpeaker: {
-			name: 'Room Guest: Deafen/Un-Deafen Guest',
+		nextSlide: {
+			name: 'Local: Next Slide',
+			description: '',
+			callback: (action) => {
+				this.sendRequest('nextSlide')
+			}
+		},
+
+		previousSlide: {
+			name: 'Local: Previous Slide',
+			description: '',
+			callback: (action) => {
+				this.sendRequest('previousSlide')
+			}
+		},
+
+		guestOverlay: {
+			name: 'Director: Send Overlay Message',
+			description: 'Sends a chat message to everyone connected and displays it on screen',
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
-					id: 'target',
-					default: '1',
-				},
-				{
-					type: 'dropdown',
-					label: 'Action',
+					label: 'Message',
 					id: 'value',
-					default: 'toggle',
-					choices: mutableChoices,
+					default: '',
 				},
 			],
 			callback: (action) => {
-				this.sendRequest('speaker', action.options.target, action.options.value)
+				this.sendRequest('sendDirectorChat', null, action.options.value)
 			},
 		},
 
-		guestVolume: {
-			name: 'Room Guest: Mic Volume',
+		group: {
+			name: 'Director: Self in Group',
+			description: 'Toggle the director of a room in/out of a specified group room',
 			options: [
-				{
-					type: 'textinput',
-					label: 'Guest (position or stream ID)',
-					id: 'target',
-					default: '1',
-				},
 				{
 					type: 'number',
-					label: 'Volume (0 to 200)',
+					label: 'Group ID (1 to 8)',
 					id: 'value',
-					default: 100,
-					min: 0,
-					max: 200,
-					range: false,
+					default: 1,
+					min: 1,
+					max: 8,
 				},
 			],
 			callback: (action) => {
-				this.sendRequest('volume', action.options.target, action.options.value)
+				this.sendRequest('group', action.options.value)
 			},
 		},
 
-		guestHangup: {
-			name: 'Room Guest: Hang Up',
+		joinGroup: {
+			name: 'Director: Join Group',
+			description: 'Have the director of a room join a specified group room',
 			options: [
 				{
-					type: 'textinput',
-					label: 'Guest (position or stream ID)',
-					id: 'target',
-					default: '1',
+					type: 'number',
+					label: 'Group ID (1 to 8)',
+					id: 'value',
+					default: 1,
+					min: 1,
+					max: 8,
 				},
 			],
 			callback: (action) => {
-				this.sendRequest('hangup', action.options.target)
+				this.sendRequest('joinGroup', action.options.value)
 			},
 		},
 
+		leaveGroup: {
+			name: 'Director: Leave Group',
+			description: 'Have the director of a room leave a specified group room',
+			options: [
+				{
+					type: 'number',
+					label: 'Group ID (1 to 8)',
+					id: 'value',
+					default: 1,
+					min: 1,
+					max: 8,
+				},
+			],
+			callback: (action) => {
+				this.sendRequest('leaveGroup', action.options.value)
+			},
+		},
+
+		viewGroup: {
+			name: 'Director: View Group',
+			description: 'Toggle the director of a room\'s preview of a specific group',
+			options: [
+				{
+					type: 'number',
+					label: 'Group ID (1 to 8)',
+					id: 'value',
+					default: 1,
+					min: 1,
+					max: 8,
+				},
+			],
+			callback: (action) => {
+				this.sendRequest('viewGroup', null, action.options.value)
+			}
+
+		},
+
+		joinViewGroup: {
+			name: 'Director: Join View Group',
+			description: 'Have the director of a room preview a specific group',
+			options: [
+				{
+					type: 'number',
+					label: 'Group ID (1 to 8)',
+					id: 'value',
+					default: 1,
+					min: 1,
+					max: 8,
+				},
+			],
+			callback: (action) => {
+				this.sendRequest('joinViewGroup', null, action.options.value)
+			}
+		},
+
+		leaveViewGroup: {
+			name: 'Director: Leave View Group',
+			description: 'Have the director of a room un-preview a specific group',
+			options: [
+				{
+					type: 'number',
+					label: 'Group ID (1 to 8)',
+					id: 'value',
+					default: 1,
+					min: 1,
+					max: 8,
+				},
+			],
+			callback: (action) => {
+				this.sendRequest('leaveViewGroup', null, action.options.value)
+			}
+		},
+		
+		soloVideo: {
+			name: 'Director: Highlight Video Control',
+			description: 'Enable, disable or toggle highlighting your video for all guests',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Action',
+					id: 'value',
+					default: 'toggle',
+					choices: mutableChoices_Highlight,
+				},
+			],
+			callback: (action) => {
+				this.sendRequest('soloVideo', null, action.options.value)
+			},
+		},
+		
 		guestForward: {
-			name: 'Room Guest: Transfer',
+			name: 'Director: Transfer Guest',
+			description: 'Transfer guest to specified room',
 			options: [
 				{
 					type: 'textinput',
@@ -292,29 +396,9 @@ export function getActions() {
 			},
 		},
 
-		guestGroup: {
-			name: 'Room Guest: Add/Remove Group',
-			options: [
-				{
-					type: 'textinput',
-					label: 'Guest (position or stream ID)',
-					id: 'target',
-					default: '1',
-				},
-				{
-					type: 'textinput',
-					label: 'Group Number (1 to 8)',
-					id: 'value',
-					default: '1',
-				},
-			],
-			callback: (action) => {
-				this.sendRequest('group', action.options.target, action.options.value)
-			},
-		},
-
 		guestAddScene: {
-			name: 'Room Guest: Add/Remove Scene',
+			name: 'Director: Guest in Scene',
+			description: 'Toggle guest in/out of specified scene',
 			options: [
 				{
 					type: 'textinput',
@@ -324,7 +408,7 @@ export function getActions() {
 				},
 				{
 					type: 'textinput',
-					label: 'Scene (1-8, or custom scene name)',
+					label: 'Scene name or ID (0 to 8)',
 					id: 'value',
 					default: '1',
 				},
@@ -335,7 +419,8 @@ export function getActions() {
 		},
 
 		guestMuteScene: {
-			name: 'Room Guest: Mute Guest in Scene',
+			name: 'Director: Guest Mic in Scene',
+			description: 'Toggle guest\'s mic audio in scenes',
 			options: [
 				{
 					type: 'textinput',
@@ -345,7 +430,7 @@ export function getActions() {
 				},
 				{
 					type: 'textinput',
-					label: 'Scene (1-8, or custom scene name)',
+					label: 'Scene name or ID (0 to 8)',
 					id: 'value',
 					default: '1',
 				},
@@ -355,8 +440,111 @@ export function getActions() {
 			},
 		},
 
+		guestGroup: {
+			name: 'Director: Guest in Group',
+			description: 'Toggle guest in/out of specified group; default group 1',
+			options: [
+				{
+					type: 'textinput',
+					label: 'Guest (position or stream ID)',
+					id: 'target',
+					default: '1',
+				},
+				{
+					type: 'textinput',
+					label: 'Group ID (1 to 8)',
+					id: 'value',
+					default: '1',
+				},
+			],
+			callback: (action) => {
+				this.sendRequest('group', action.options.target, action.options.value)
+			},
+		},
+
+		guestMic: {
+			name: 'Director: Guest Mic',
+			description: 'Toggle the mic of a specific guest',
+			options: [
+				{
+					type: 'textinput',
+					label: 'Guest (position or stream ID)',
+					id: 'target',
+					default: '1',
+				},
+			],
+			callback: (action) => {
+				this.sendRequest('mic', action.options.target)
+			},
+		},
+
+		guestHangup: {
+			name: 'Director: Hang Up Guest',
+			description: 'Hangup a specific guest',
+			options: [
+				{
+					type: 'textinput',
+					label: 'Guest (position or stream ID)',
+					id: 'target',
+					default: '1',
+				},
+			],
+			callback: (action) => {
+				this.sendRequest('hangup', action.options.target)
+			},
+		},
+
+		guestSoloChat: {
+			name: 'Director: Solo Talk',
+			description: 'Toggle solo chat with a specific guest',
+			options: [
+				{
+					type: 'textinput',
+					label: 'Guest (position or stream ID)',
+					id: 'target',
+					default: '1',
+				},
+			],
+			callback: (action) => {
+				this.sendRequest('soloChat', action.options.target, null)
+			},
+		},
+
+		guestAltSoloChat: {
+			name: 'Director: Two-way Solo Talk',
+			description: 'Toggle two-way solo chat with a specific guest',
+			options: [
+				{
+					type: 'textinput',
+					label: 'Guest (position or stream ID)',
+					id: 'target',
+					default: '1',
+				},
+			],
+			callback: (action) => {
+				this.sendRequest('soloChatBidirectional', action.options.target, null)
+			},
+		},
+
+		guestSpeaker: {
+			name: 'Director: Guest Speaker',
+			description: 'Toggle speaker with a specific guest',
+			options: [
+				{
+					type: 'textinput',
+					label: 'Guest (position or stream ID)',
+					id: 'target',
+					default: '1',
+				},
+			],
+			callback: (action) => {
+				this.sendRequest('speaker', action.options.target)
+			},
+		},
+
 		guestDisplay: {
-			name: 'Room Guest: Blind/Un-Blind Guest',
+			name: 'Director: Guest Blind',
+			description: 'Toggle whether a specific guest can see any video or not',
 			options: [
 				{
 					type: 'textinput',
@@ -370,8 +558,25 @@ export function getActions() {
 			},
 		},
 
+		guestForceKeyframe: {
+			name: 'Director: Force Keyframe',
+			description: 'Helps resolve rainbow puke',
+			options: [
+				{
+					type: 'textinput',
+					label: 'Guest (position or stream ID)',
+					id: 'target',
+					default: '1',
+				},
+			],
+			callback: (action) => {
+				this.sendRequest('forceKeyframe', action.options.target)
+			},
+		},
+
 		guestSoloVideo: {
-			name: 'Room Guest: Toggle Highlight Guest',
+			name: 'Director:  ToggleGuest Highlight',
+			description: 'Toggle whether a video is highlighted everywhere',
 			options: [
 				{
 					type: 'textinput',
@@ -385,9 +590,9 @@ export function getActions() {
 			},
 		},
 
-		guestForceKeyframe: {
-			name: 'Room Guest: Send Keyframe',
-			description: 'Helps resolve rainbow puke',
+		guestVolume: {
+			name: 'Director: Set Guest Mic Volume',
+			description: 'Set the microphone volume of a specific remote guest',
 			options: [
 				{
 					type: 'textinput',
@@ -395,9 +600,18 @@ export function getActions() {
 					id: 'target',
 					default: '1',
 				},
+				{
+					type: 'number',
+					label: 'Volume (0 to 200)',
+					id: 'value',
+					default: 100,
+					min: 0,
+					max: 200,
+					range: false,
+				},
 			],
 			callback: (action) => {
-				this.sendRequest('forceKeyframe', action.options.target)
+				this.sendRequest('volume', action.options.target, action.options.value)
 			},
 		},
 	}
