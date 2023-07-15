@@ -32,7 +32,6 @@ Control [VDO.Ninja](https://vdo.ninja) settings remotely.
 
 ##### Targets self
 
-- Send Overlay Message
 - Self in Group
 - Join Group
 - Leave Group
@@ -46,6 +45,7 @@ Control [VDO.Ninja](https://vdo.ninja) settings remotely.
 - Guest Mic
 - Guest Speaker
 - Set Guest Mic Volume
+- Overlay Message to Guest
 - Transfer Guest
 - Guest in Scene
 - Guest Mic in Scene

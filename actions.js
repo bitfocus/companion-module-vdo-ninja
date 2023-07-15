@@ -12,7 +12,6 @@ export function getActions() {
 	]
 
 	let actions = {
-
 		speaker: {
 			name: 'Local: Speaker Control',
 			description: 'Mute, unmute or toggle the local speaker',
@@ -130,7 +129,7 @@ export function getActions() {
 
 		hangup: {
 			name: 'Local: Hang Up',
-			description: 'Hang up the current connection. For directors, this mainly stops microphone and camera',
+			description: 'Hang up the current connection.',
 			options: [],
 			callback: (action) => {
 				this.sendRequest('hangup')
@@ -218,7 +217,8 @@ export function getActions() {
 
 		nextSlide: {
 			name: 'Local: Next Slide',
-			description: '',
+			description: 'For PowerPoint usage',
+			options: [],
 			callback: (action) => {
 				this.sendRequest('nextSlide')
 			}
@@ -226,16 +226,23 @@ export function getActions() {
 
 		previousSlide: {
 			name: 'Local: Previous Slide',
-			description: '',
+			description: 'For PowerPoint usage',
+			options: [],
 			callback: (action) => {
 				this.sendRequest('previousSlide')
 			}
 		},
 
 		guestOverlay: {
-			name: 'Director: Send Overlay Message',
-			description: 'Sends a chat message to everyone connected and displays it on screen',
+			name: 'Director: Overlay Message to Guest',
+			description: 'Sends a chat message to a guest and displays it on screen',
 			options: [
+				{
+					type: 'textinput',
+					label: 'Guest (position or stream ID)',
+					id: 'target',
+					default: '1',
+				},
 				{
 					type: 'textinput',
 					label: 'Message',
@@ -244,7 +251,7 @@ export function getActions() {
 				},
 			],
 			callback: (action) => {
-				this.sendRequest('sendDirectorChat', null, action.options.value)
+				this.sendRequest('sendDirectorChat', action.options.target, action.options.value)
 			},
 		},
 
@@ -262,7 +269,7 @@ export function getActions() {
 				},
 			],
 			callback: (action) => {
-				this.sendRequest('group', action.options.value)
+				this.sendRequest('group', null, action.options.value)
 			},
 		},
 
@@ -280,7 +287,7 @@ export function getActions() {
 				},
 			],
 			callback: (action) => {
-				this.sendRequest('joinGroup', action.options.value)
+				this.sendRequest('joinGroup', null, action.options.value)
 			},
 		},
 
@@ -298,7 +305,7 @@ export function getActions() {
 				},
 			],
 			callback: (action) => {
-				this.sendRequest('leaveGroup', action.options.value)
+				this.sendRequest('leaveGroup', null, action.options.value)
 			},
 		},
 
@@ -358,19 +365,11 @@ export function getActions() {
 		},
 		
 		soloVideo: {
-			name: 'Director: Highlight Video Control',
-			description: 'Enable, disable or toggle highlighting your video for all guests',
-			options: [
-				{
-					type: 'dropdown',
-					label: 'Action',
-					id: 'value',
-					default: 'toggle',
-					choices: mutableChoices_Highlight,
-				},
-			],
+			name: 'Director: Toggle Highlight Video',
+			description: 'Toggles highlighting your video for all guests',
+			options: [],
 			callback: (action) => {
-				this.sendRequest('soloVideo', null, action.options.value)
+				this.sendRequest('soloVideo', action.options.value)
 			},
 		},
 		
@@ -386,7 +385,7 @@ export function getActions() {
 				},
 				{
 					type: 'textinput',
-					label: 'Destination Room (room ID)',
+					label: 'Destination room',
 					id: 'value',
 					default: '',
 				},
@@ -575,7 +574,7 @@ export function getActions() {
 		},
 
 		guestSoloVideo: {
-			name: 'Director:  ToggleGuest Highlight',
+			name: 'Director: Toggle Guest Highlight',
 			description: 'Toggle whether a video is highlighted everywhere',
 			options: [
 				{
