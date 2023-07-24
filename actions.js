@@ -7,8 +7,8 @@ export function getActions() {
 
 	let mutableChoices_Highlight = [
 		{ id: 'toggle', label: 'Toggle' },
-		{ id: 'true', label: 'Highlight'},
-		{ id: 'false', label: 'Un-highlight'},
+		{ id: 'true', label: 'Highlight' },
+		{ id: 'false', label: 'Un-highlight' },
 	]
 
 	let actions = {
@@ -221,7 +221,7 @@ export function getActions() {
 			options: [],
 			callback: (action) => {
 				this.sendRequest('nextSlide')
-			}
+			},
 		},
 
 		previousSlide: {
@@ -230,10 +230,8 @@ export function getActions() {
 			options: [],
 			callback: (action) => {
 				this.sendRequest('previousSlide')
-			}
+			},
 		},
-
-
 
 		group: {
 			name: 'Director: Self in Group',
@@ -291,7 +289,7 @@ export function getActions() {
 
 		viewGroup: {
 			name: 'Director: View Group',
-			description: 'Toggle the director of a room\'s preview of a specific group',
+			description: "Toggle the director of a room's preview of a specific group",
 			options: [
 				{
 					type: 'number',
@@ -304,8 +302,7 @@ export function getActions() {
 			],
 			callback: (action) => {
 				this.sendRequest('viewGroup', null, action.options.value)
-			}
-
+			},
 		},
 
 		joinViewGroup: {
@@ -323,7 +320,7 @@ export function getActions() {
 			],
 			callback: (action) => {
 				this.sendRequest('joinViewGroup', null, action.options.value)
-			}
+			},
 		},
 
 		leaveViewGroup: {
@@ -341,9 +338,9 @@ export function getActions() {
 			],
 			callback: (action) => {
 				this.sendRequest('leaveViewGroup', null, action.options.value)
-			}
+			},
 		},
-		
+
 		soloVideo: {
 			name: 'Director: Toggle Highlight Video',
 			description: 'Toggles highlighting your video for all guests',
@@ -352,7 +349,7 @@ export function getActions() {
 				this.sendRequest('soloVideo', action.options.value)
 			},
 		},
-		
+
 		guestForward: {
 			name: 'Director: Transfer Guest',
 			description: 'Transfer guest to specified room',
@@ -399,7 +396,7 @@ export function getActions() {
 
 		guestMuteScene: {
 			name: 'Director: Guest Mic in Scene',
-			description: 'Toggle guest\'s mic audio in scenes',
+			description: "Toggle guest's mic audio in scenes",
 			options: [
 				{
 					type: 'textinput',
