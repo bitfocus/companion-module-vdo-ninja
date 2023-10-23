@@ -8,15 +8,15 @@
 	},
 	"license": "MIT",
 	"dependencies": {
-		"@companion-module/base": "~1.4.1",
-		"ws": "^8.13.0"
+		"@companion-module/base": "~1.5.1",
+		"ws": "^8.14.2"
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/bitfocus/companion-module-vdo-ninja.git"
 	},
 	"devDependencies": {
-		"@companion-module/tools": "^1.2.1"
+		"@companion-module/tools": "^1.4.1"
 	},
 	"prettier": "@companion-module/tools/.prettierrc.json"
 }
