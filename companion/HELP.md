@@ -68,3 +68,4 @@ Control [VDO.Ninja](https://vdo.ninja) settings remotely.
 - mic (Current mute status, either by stream ID or guest position)
 - camera (Current camera status, either by stream ID or guest position)
 - speaker (Available for the "Director" role only)
+- label (if specified, otherwise just the guest position number)
