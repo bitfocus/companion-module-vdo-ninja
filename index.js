@@ -151,6 +151,7 @@ class VDONinjaInstance extends InstanceBase {
 		this.states[data.streamID] = data
 		let label = data.streamID
 		let name = data.label ? `(${data.label})` : ''
+
 		if (data.director) {
 			label = 'Director'
 		} else if (data.position) {
@@ -182,43 +183,55 @@ class VDONinjaInstance extends InstanceBase {
 
 	processUpdate(data) {
 		if (this.states[data.streamID]) {
-			if (data.action === 'hangup' && data.value) {
-				delete this.states[data.streamID]
-				let index = this.streams.findIndex((o) => {
-					return o.id === data.streamID
-				})
-				this.streams.splice(index, 1)
-				this.initActions()
-				this.initVariables()
-				this.initFeedbacks()
-			} else if (data.action === 'newViewConnection') {
-				this.ws.send(`{"action": "getDetails"}`)
-			} else if (data.action === 'director') {
-				this.states[data.streamID][data.action] = data.value
-				this.initActions()
-				this.initVariables()
-				this.initFeedbacks()
-			} else if (data.action === 'endViewConnection' && data.value) {
-				delete this.states[data.value]
-				let index = this.streams.findIndex((o) => {
-					return o.id === data.value
-				})
-				this.streams.splice(index, 1)
-				this.initActions()
-				this.initVariables()
-				this.initFeedbacks()
-			} else if (data.action === 'positionChange') {
-				this.ws.send(`{"action": "getDetails"}`)
-			} else if (data.action === 'directorMuted') {
-				this.states[data.streamID].others['mute-guest'] = data.value ? 1 : 0
-			} else if (data.action === 'directorVideoMuted') {
-				this.states[data.streamID].others['hide-guest'] = data.value ? 1 : 0
-			} else if (data.action === 'remoteMuted') {
-				this.states[data.streamID].muted = data.value
-			} else if (data.action === 'remoteVideoMuted') {
-				this.states[data.streamID].videoMuted = data.value
-			} else {
-				this.states[data.streamID][data.action] = data.value
+			let action = data.action
+			switch (action) {
+				case 'hangup':
+					delete this.states[data.streamID]
+					let hangup = this.streams.findIndex((o) => {
+						return o.id === data.streamID
+					})
+					this.streams.splice(hangup, 1)
+					this.initActions()
+					this.initVariables()
+					this.initFeedbacks()
+					break
+				case 'newViewConnection':
+					this.ws.send(`{"action": "getDetails"}`)
+					break
+				case 'director':
+					this.states[data.streamID][data.action] = data.value
+					this.initActions()
+					this.initVariables()
+					this.initFeedbacks()
+					break
+				case 'endViewConnection':
+					delete this.states[data.value]
+					let endView = this.streams.findIndex((o) => {
+						return o.id === data.value
+					})
+					this.streams.splice(endView, 1)
+					this.initActions()
+					this.initVariables()
+					this.initFeedbacks()
+					break
+				case 'positionChange':
+					this.ws.send(`{"action": "getDetails"}`)
+					break
+				case 'directorMuted':
+					this.states[data.streamID].others['mute-guest'] = data.value ? 1 : 0
+					break
+				case 'directorVideoMuted':
+					this.states[data.streamID].others['hide-guest'] = data.value ? 1 : 0
+					break
+				case 'remoteMuted':
+					this.states[data.streamID].muted = data.value
+					break
+				case 'remoteVideoMuted':
+					this.states[data.streamID].videoMuted = data.value
+					break
+				default:
+					this.states[data.streamID][data.action] = data.value
+					break
 			}
 			this.updateVariables()
 			this.checkFeedbacks()

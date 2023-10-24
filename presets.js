@@ -19,7 +19,7 @@ export function getPresets() {
 				name: `guest_${stream.position}_mic`,
 				options: {},
 				style: {
-					text: `Guest ${stream.position}\\nMic\\n$(VDO.Ninja:guest_${stream.position}_mic)`,
+					text: `$(VDO.Ninja:guest_${stream.position}_label)\\nMic\\n$(VDO.Ninja:guest_${stream.position}_mic)`,
 					size: 'auto',
 					color: ColorWhite,
 					bgcolor: ColorBlack,
@@ -58,7 +58,7 @@ export function getPresets() {
 				name: `guest_${stream.position}_camera`,
 				options: {},
 				style: {
-					text: `Guest ${stream.position}\\nCamera\\n$(VDO.Ninja:guest_${stream.position}_camera)`,
+					text: `$(VDO.Ninja:guest_${stream.position}_label)\\nCamera\\n$(VDO.Ninja:guest_${stream.position}_camera)`,
 					size: 'auto',
 					color: ColorWhite,
 					bgcolor: ColorBlack,

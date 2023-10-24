@@ -13,6 +13,7 @@ export function getVariables() {
 			} else if (data.position) {
 				variables.push({ variableId: `guest_${data.position}_mic`, name: `Guest ${data.position} ${name} - Mic` })
 				variables.push({ variableId: `guest_${data.position}_camera`, name: `Guest ${data.position} ${name} - Camera` })
+				variables.push({ variableId: `guest_${data.position}_label`, name: `Guest ${data.position} - Label` })
 			} else {
 				variables.push({ variableId: `${data.streamID}_mic`, name: `${data.streamID} ${name} - Mic` })
 				variables.push({ variableId: `${data.streamID}_camera`, name: `${data.streamID} ${name} - Camera` })
@@ -25,6 +26,7 @@ export function getVariables() {
 export function updateVariables() {
 	for (let x in this.states) {
 		let data = this.states[x]
+		let label = data.label ? data.label : `Guest ${data.position}`
 
 		if (data.streamID) {
 			if (data.director) {
@@ -37,6 +39,7 @@ export function updateVariables() {
 				this.setVariableValues({
 					[`guest_${data.position}_mic`]: data.muted || data.others['mute-guest'] == 1 ? 'Muted' : 'Unmuted',
 					[`guest_${data.position}_camera`]: data.videoMuted || data.others['hide-guest'] == 1 ? 'Muted' : 'Unmuted',
+					[`guest_${data.position}_label`]: label,
 				})
 			} else {
 				this.setVariableValues({
