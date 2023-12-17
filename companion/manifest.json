@@ -3,7 +3,7 @@
 	"name": "vdo-ninja",
 	"shortname": "VDO.Ninja",
 	"description": "vdo-ninja",
-	"version": "2.1.0",
+	"version": "2.2.0",
 	"license": "MIT",
 	"repository": "git+https://github.com/bitfocus/companion-module-vdo-ninja.git",
 	"bugs": "https://github.com/bitfocus/companion-module-vdo-ninja/issues",

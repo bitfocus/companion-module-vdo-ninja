@@ -171,7 +171,7 @@ export function getActions() {
 
 		panning: {
 			name: 'Local: Set Audio Pan',
-			description: 'Sets the stereo pannning of all incoming audio streams',
+			description: 'Sets the stereo panning of all incoming audio streams',
 			options: [
 				{
 					type: 'number',
