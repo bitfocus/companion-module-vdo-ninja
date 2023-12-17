@@ -164,7 +164,7 @@ export function getActions() {
 				this.sendRequest(
 					'bitrate',
 					null,
-					action.options.value === 'custom' ? action.options.bitrate : action.options.value,
+					action.options.value === 'custom' ? action.options.bitrate : action.options.value
 				)
 			},
 		},
