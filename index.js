@@ -3,6 +3,7 @@ import { getActions } from './actions.js'
 import { getPresets } from './presets.js'
 import { getVariables, updateVariables } from './variables.js'
 import { getFeedbacks } from './feedbacks.js'
+import { upgradeScripts } from './upgrades.js'
 
 import WebSocket from 'ws'
 
@@ -47,11 +48,31 @@ class VDONinjaInstance extends InstanceBase {
 				label: 'API ID',
 				width: 6,
 			},
+			{
+				type: 'checkbox',
+				id: 'wsCustom',
+				label: 'Custom Websockets Server (Advanced)',
+				default: false,
+				width: 6,
+			},
+			{
+				type: 'textinput',
+				id: 'wsServer',
+				label: 'Custom Websockets Server Domain',
+				default: 'api.vdo.ninja',
+				tooltip:
+					'Only use this if you are self-hosting your own websockets server. Only include the domain, not "wss://" or port',
+				width: 6,
+				isVisible: (options) => options.wsCustom,
+			},
 		]
 	}
 
 	async configUpdated(config) {
 		this.config = config
+		if (this.reconnect) {
+			clearInterval(this.reconnect)
+		}
 		this.initWebSocket()
 	}
 
@@ -85,7 +106,12 @@ class VDONinjaInstance extends InstanceBase {
 				delete this.ws
 			}
 
-			this.ws = new WebSocket(`wss://api.vdo.ninja:443`)
+			let serverUrl = 'api.vdo.ninja'
+			if (this.config.wsCustom && this.config.wsServer) {
+				serverUrl = this.config.wsServer
+			}
+
+			this.ws = new WebSocket(`wss://${serverUrl}:443`)
 
 			this.ws.on('open', () => {
 				if (!this.connected) {
@@ -115,7 +141,7 @@ class VDONinjaInstance extends InstanceBase {
 					this.connected = false
 					this.updateStatus('connection_failure')
 					if (data?.code == 'ENOTFOUND') {
-						this.log('error', `Unable to reach api.vdo.ninja`)
+						this.log('error', `Unable to reach ${serverUrl}`)
 					} else {
 						this.log('error', `WebSocket ${data}`)
 					}
@@ -251,4 +277,4 @@ class VDONinjaInstance extends InstanceBase {
 	}
 }
 
-runEntrypoint(VDONinjaInstance, [])
+runEntrypoint(VDONinjaInstance, upgradeScripts)
