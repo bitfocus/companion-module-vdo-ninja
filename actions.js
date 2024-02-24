@@ -5,12 +5,6 @@ export function getActions() {
 		{ id: 'false', label: 'Mute' },
 	]
 
-	let mutableChoices_Highlight = [
-		{ id: 'toggle', label: 'Toggle' },
-		{ id: 'true', label: 'Highlight' },
-		{ id: 'false', label: 'Un-highlight' },
-	]
-
 	let actions = {
 		speaker: {
 			name: 'Local: Speaker Control',
@@ -42,7 +36,7 @@ export function getActions() {
 				},
 			],
 			callback: (action) => {
-				this.sendRequest('mic', null, action.options.value)
+				this.sendRequest('mic', null, action.options.value, true)
 			},
 		},
 
@@ -59,7 +53,7 @@ export function getActions() {
 				},
 			],
 			callback: (action) => {
-				this.sendRequest('camera', null, action.options.value)
+				this.sendRequest('camera', null, action.options.value, true)
 			},
 		},
 

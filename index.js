@@ -1,4 +1,4 @@
-import { InstanceBase, runEntrypoint } from '@companion-module/base'
+import { InstanceBase, InstanceStatus, runEntrypoint } from '@companion-module/base'
 import { getActions } from './actions.js'
 import { getPresets } from './presets.js'
 import { getVariables, updateVariables } from './variables.js'
@@ -15,7 +15,7 @@ class VDONinjaInstance extends InstanceBase {
 	}
 
 	async init(config) {
-		this.updateStatus('connecting')
+		this.updateStatus(InstanceStatus.Connecting)
 
 		this.config = config
 
@@ -118,7 +118,7 @@ class VDONinjaInstance extends InstanceBase {
 					this.log('info', `Connection opened to VDO.Ninja`)
 					this.connected = true
 				}
-				this.updateStatus('ok')
+				this.updateStatus(InstanceStatus.Ok)
 
 				this.ws.send(`{"join": "${this.config.apiID}" }`)
 				this.ws.send(`{"action": "getDetails"}`)
@@ -139,7 +139,7 @@ class VDONinjaInstance extends InstanceBase {
 			this.ws.on('error', (data) => {
 				if (this.connected !== false) {
 					this.connected = false
-					this.updateStatus('connection_failure')
+					this.updateStatus(InstanceStatus.ConnectionFailure)
 					if (data?.code == 'ENOTFOUND') {
 						this.log('error', `Unable to reach ${serverUrl}`)
 					} else {
@@ -152,7 +152,7 @@ class VDONinjaInstance extends InstanceBase {
 			})
 		} else {
 			this.log('warn', `API ID required to connect to VDO.Ninja, please add one in the module settings`)
-			this.updateStatus('bad_config', 'Missing API ID')
+			this.updateStatus(InstanceStatus.BadConfig, 'Missing API ID')
 		}
 	}
 
@@ -166,6 +166,17 @@ class VDONinjaInstance extends InstanceBase {
 					let data = result[x]
 					this.processGetDetails(data)
 				}
+			} else if (callback.local) {
+				for (let x in this.states) {
+					if (this.states[x].localStream) {
+						let result = callback.result
+						if (callback.value !== 'toggle') {
+							this.processUpdate({ streamID: this.states[x].streamID, action: callback.action, value: result })
+						}
+					}
+				}
+			} else {
+				//console.log(callback)
 			}
 		} else if (message?.update) {
 			let data = message.update
@@ -184,6 +195,10 @@ class VDONinjaInstance extends InstanceBase {
 			label = `Guest ${data.position} ${name}`
 		} else if (data.label) {
 			label = data.label
+		}
+
+		if (data.localStream) {
+			label = `${label} (Local)`
 		}
 
 		let streamObject = { id: data.streamID, label: label }
@@ -244,17 +259,20 @@ class VDONinjaInstance extends InstanceBase {
 					this.ws.send(`{"action": "getDetails"}`)
 					break
 				case 'directorMuted':
-					this.states[data.streamID].others['mute-guest'] = data.value ? 1 : 0
+					this.states[data.streamID].others['mute-guest'] = data.value ? '1' : '0'
 					break
-				case 'directorVideoMuted':
-					this.states[data.streamID].others['hide-guest'] = data.value ? 1 : 0
+				case 'directorVideoHide':
+					this.states[data.streamID].others['hide-guest'] = data.value ? '1' : '0'
 					break
 				case 'remoteMuted':
+				case 'mic':
 					this.states[data.streamID].muted = data.value
 					break
 				case 'remoteVideoMuted':
+				case 'camera':
 					this.states[data.streamID].videoMuted = data.value
 					break
+
 				default:
 					this.states[data.streamID][data.action] = data.value
 					break
@@ -267,11 +285,12 @@ class VDONinjaInstance extends InstanceBase {
 		}
 	}
 
-	sendRequest(action, target, value) {
+	sendRequest(action, target, value, local) {
 		let object = {
-			action: action ? action : 'null',
-			target: target ? target : 'null',
-			value: value ? value : 'null',
+			action: action ?? 'null',
+			target: target ?? 'null',
+			value: value ?? 'null',
+			local: local ?? false,
 		}
 		this.ws.send(JSON.stringify(object))
 	}

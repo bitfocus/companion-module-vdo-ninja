@@ -1,6 +1,6 @@
 {
 	"name": "vdo-ninja",
-	"version": "2.2.0",
+	"version": "2.2.1",
 	"main": "index.js",
 	"type": "module",
 	"scripts": {
@@ -8,15 +8,15 @@
 	},
 	"license": "MIT",
 	"dependencies": {
-		"@companion-module/base": "~1.6.0",
-		"ws": "^8.15.1"
+		"@companion-module/base": "~1.7.0",
+		"ws": "^8.16.0"
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/bitfocus/companion-module-vdo-ninja.git"
 	},
 	"devDependencies": {
-		"@companion-module/tools": "^1.4.1"
+		"@companion-module/tools": "^1.5.0"
 	},
 	"prettier": "@companion-module/tools/.prettierrc.json"
 }

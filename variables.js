@@ -37,8 +37,8 @@ export function updateVariables() {
 				})
 			} else if (data.position) {
 				this.setVariableValues({
-					[`guest_${data.position}_mic`]: data.muted || data.others['mute-guest'] == 1 ? 'Muted' : 'Unmuted',
-					[`guest_${data.position}_camera`]: data.videoMuted || data.others['hide-guest'] == 1 ? 'Muted' : 'Unmuted',
+					[`guest_${data.position}_mic`]: data.muted || data.others?.['mute-guest'] == 1 ? 'Muted' : 'Unmuted',
+					[`guest_${data.position}_camera`]: data.videoMuted || data.others?.['hide-guest'] == 1 ? 'Muted' : 'Unmuted',
 					[`guest_${data.position}_label`]: label,
 				})
 			} else {

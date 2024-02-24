@@ -38,21 +38,17 @@ export function getFeedbacks() {
 			bgcolor: ColorGreen,
 		},
 		callback: (feedback) => {
-			if (this.states[feedback.options.stream]?.position) {
-				if (feedback.options.state) {
-					if (this.states[feedback.options.stream]?.others['mute-guest'] === 1) {
-						return true
+			let stream = this.states[feedback.options.stream]
+			if (stream) {
+				if (stream.position && !stream.director) {
+					if (stream?.others?.['mute-guest'] == 1) {
+						return feedback.options.state ?? false
 					} else {
-						return this.states[feedback.options.stream]?.muted
+						return stream?.muted === feedback.options.state
 					}
 				} else {
-					if (this.states[feedback.options.stream]?.others['mute-guest'] === 1) {
-						return false
-					}
-					return this.states[feedback.options.stream]?.muted === feedback.options.state
+					return stream?.muted === feedback.options.state
 				}
-			} else {
-				return this.states[feedback.options.stream]?.muted === feedback.options.state
 			}
 		},
 	}
@@ -84,21 +80,17 @@ export function getFeedbacks() {
 			bgcolor: ColorGreen,
 		},
 		callback: (feedback) => {
-			if (this.states[feedback.options.stream]?.position) {
-				if (feedback.options.state) {
-					if (this.states[feedback.options.stream]?.others['hide-guest'] === 1) {
-						return true
+			let stream = this.states[feedback.options.stream]
+			if (stream) {
+				if (stream.position && !stream.director) {
+					if (stream?.others?.['hide-guest'] == 1) {
+						return feedback.options.state ?? false
 					} else {
-						return this.states[feedback.options.stream]?.videoMuted
+						return stream?.videoMuted === feedback.options.state
 					}
 				} else {
-					if (this.states[feedback.options.stream]?.others['hide-guest'] === 1) {
-						return false
-					}
-					return this.states[feedback.options.stream]?.videoMuted === feedback.options.state
+					return stream?.videoMuted === feedback.options.state
 				}
-			} else {
-				return this.states[feedback.options.stream]?.videoMuted === feedback.options.state
 			}
 		},
 	}
