@@ -1,4 +1,4 @@
-import { InstanceBase, runEntrypoint } from '@companion-module/base'
+import { InstanceBase, InstanceStatus, runEntrypoint } from '@companion-module/base'
 import { getActions } from './actions.js'
 import { getPresets } from './presets.js'
 import { getVariables, updateVariables } from './variables.js'
@@ -15,7 +15,7 @@ class VDONinjaInstance extends InstanceBase {
 	}
 
 	async init(config) {
-		this.updateStatus('connecting')
+		this.updateStatus(InstanceStatus.Connecting)
 
 		this.config = config
 
@@ -118,7 +118,7 @@ class VDONinjaInstance extends InstanceBase {
 					this.log('info', `Connection opened to VDO.Ninja`)
 					this.connected = true
 				}
-				this.updateStatus('ok')
+				this.updateStatus(InstanceStatus.Ok)
 
 				this.ws.send(`{"join": "${this.config.apiID}" }`)
 				this.ws.send(`{"action": "getDetails"}`)
@@ -139,7 +139,7 @@ class VDONinjaInstance extends InstanceBase {
 			this.ws.on('error', (data) => {
 				if (this.connected !== false) {
 					this.connected = false
-					this.updateStatus('connection_failure')
+					this.updateStatus(InstanceStatus.ConnectionFailure)
 					if (data?.code == 'ENOTFOUND') {
 						this.log('error', `Unable to reach ${serverUrl}`)
 					} else {
@@ -152,7 +152,7 @@ class VDONinjaInstance extends InstanceBase {
 			})
 		} else {
 			this.log('warn', `API ID required to connect to VDO.Ninja, please add one in the module settings`)
-			this.updateStatus('bad_config', 'Missing API ID')
+			this.updateStatus(InstanceStatus.BadConfig, 'Missing API ID')
 		}
 	}
 
@@ -218,6 +218,7 @@ class VDONinjaInstance extends InstanceBase {
 			this.updateVariables()
 			this.initPresets()
 		}
+		console.log(this.states)
 		this.checkFeedbacks()
 		this.updateVariables()
 	}

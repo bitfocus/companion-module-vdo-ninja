@@ -26,7 +26,7 @@ export function getVariables() {
 export function updateVariables() {
 	for (let x in this.states) {
 		let data = this.states[x]
-		let label = data.label ?? `Guest ${data.position}`
+		let label = data.label ? data.label : `Guest ${data.position}`
 
 		if (data.streamID) {
 			if (data.director) {

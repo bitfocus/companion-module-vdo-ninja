@@ -12,7 +12,7 @@ export function getPresets() {
 	for (let s in this.states) {
 		let stream = this.states[s]
 
-		if (stream.position) {
+		if (stream.position && !stream.director) {
 			presets[`guest_${stream.position}_mic`] = {
 				type: 'button',
 				category: 'Guest Actions',

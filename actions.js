@@ -5,12 +5,6 @@ export function getActions() {
 		{ id: 'false', label: 'Mute' },
 	]
 
-	let mutableChoices_Highlight = [
-		{ id: 'toggle', label: 'Toggle' },
-		{ id: 'true', label: 'Highlight' },
-		{ id: 'false', label: 'Un-highlight' },
-	]
-
 	let actions = {
 		speaker: {
 			name: 'Local: Speaker Control',
