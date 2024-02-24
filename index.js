@@ -218,7 +218,6 @@ class VDONinjaInstance extends InstanceBase {
 			this.updateVariables()
 			this.initPresets()
 		}
-		console.log(this.states)
 		this.checkFeedbacks()
 		this.updateVariables()
 	}

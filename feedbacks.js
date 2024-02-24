@@ -83,7 +83,6 @@ export function getFeedbacks() {
 			let stream = this.states[feedback.options.stream]
 			if (stream) {
 				if (stream.position && !stream.director) {
-					//console.log(stream?.others)
 					if (stream?.others?.['hide-guest'] == 1) {
 						return feedback.options.state ?? false
 					} else {
