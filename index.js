@@ -272,7 +272,9 @@ class VDONinjaInstance extends InstanceBase {
 				case 'camera':
 					this.states[data.streamID].videoMuted = data.value
 					break
-
+				case 'details':
+					this.ws.send(`{"action": "getDetails"}`)
+					break
 				default:
 					this.states[data.streamID][data.action] = data.value
 					break

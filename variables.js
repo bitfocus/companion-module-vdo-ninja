@@ -14,10 +14,10 @@ export function getVariables() {
 				variables.push({ variableId: `guest_${data.position}_mic`, name: `Guest ${data.position} ${name} - Mic` })
 				variables.push({ variableId: `guest_${data.position}_camera`, name: `Guest ${data.position} ${name} - Camera` })
 				variables.push({ variableId: `guest_${data.position}_label`, name: `Guest ${data.position} - Label` })
-			} else {
-				variables.push({ variableId: `${data.streamID}_mic`, name: `${data.streamID} ${name} - Mic` })
-				variables.push({ variableId: `${data.streamID}_camera`, name: `${data.streamID} ${name} - Camera` })
 			}
+			variables.push({ variableId: `${data.streamID}_mic`, name: `Stream ID: ${data.streamID} - Mic` })
+			variables.push({ variableId: `${data.streamID}_camera`, name: `Stream ID: ${data.streamID} - Camera` })
+			variables.push({ variableId: `${data.streamID}_label`, name: `Stream ID: ${data.streamID} - Label` })
 		}
 	}
 	return variables
@@ -30,6 +30,7 @@ export function updateVariables() {
 
 		if (data.streamID) {
 			if (data.director) {
+				label = 'Director'
 				this.setVariableValues({
 					director_mic: data.muted ? 'Muted' : 'Unmuted',
 					director_camera: data.videoMuted ? 'Muted' : 'Unmuted',
@@ -41,12 +42,12 @@ export function updateVariables() {
 					[`guest_${data.position}_camera`]: data.videoMuted || data.others?.['hide-guest'] == 1 ? 'Muted' : 'Unmuted',
 					[`guest_${data.position}_label`]: label,
 				})
-			} else {
-				this.setVariableValues({
-					[`${data.streamID}_mic`]: data.muted ? 'Muted' : 'Unmuted',
-					[`${data.streamID}_camera`]: data.videoMuted ? 'Muted' : 'Unmuted',
-				})
 			}
+			this.setVariableValues({
+				[`${data.streamID}_mic`]: data.muted || data.others?.['mute-guest'] == 1 ? 'Muted' : 'Unmuted',
+				[`${data.streamID}_camera`]: data.videoMuted || data.others?.['hide-guest'] == 1 ? 'Muted' : 'Unmuted',
+				[`${data.streamID}_label`]: label,
+			})
 		}
 	}
 }
