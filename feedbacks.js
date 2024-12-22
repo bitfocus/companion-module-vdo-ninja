@@ -139,12 +139,10 @@ export function getFeedbacks() {
 				choices: this.streams,
 			},
 			{
-				type: 'number',
-				label: 'Scene',
+				type: 'textinput',
+				label: 'Scene name or ID (0 to 8)',
 				id: 'scene',
-				default: 1,
-				min: 1,
-				max: 8,
+				default: '1',
 			},
 		],
 		defaultStyle: {
