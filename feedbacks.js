@@ -125,6 +125,40 @@ export function getFeedbacks() {
 			return this.states[feedback.options.stream]?.speakerMuted === feedback.options.state
 		},
 	}
+	feedbacks['guestScene'] = {
+		type: 'boolean',
+		name: 'Guest in Scene',
+		description: 'If a stream is active the selected scene, change the style of the button',
+		options: [
+			{
+				type: 'dropdown',
+				label: 'Stream',
+				id: 'stream',
+				allowCustom: true,
+				default: this.streams[0]?.id,
+				choices: this.streams,
+			},
+			{
+				type: 'textinput',
+				label: 'Scene name or ID (0 to 8)',
+				id: 'scene',
+				default: '1',
+			},
+		],
+		defaultStyle: {
+			color: ColorWhite,
+			bgcolor: ColorGreen,
+		},
+		callback: (feedback) => {
+			let stream = this.states[feedback.options.stream]
+			let scene = feedback.options.scene
+			if (stream) {
+				return stream?.scenes?.[scene] == true
+			} else {
+				return false
+			}
+		},
+	}
 
 	return feedbacks
 }
