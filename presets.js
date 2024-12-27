@@ -5,9 +5,7 @@ export function getPresets() {
 
 	const ColorWhite = combineRgb(255, 255, 255)
 	const ColorBlack = combineRgb(0, 0, 0)
-	const ColorRed = combineRgb(200, 0, 0)
 	const ColorGreen = combineRgb(0, 200, 0)
-	const ColorYellow = combineRgb(212, 174, 0)
 
 	for (let s in this.states) {
 		let stream = this.states[s]

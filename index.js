@@ -227,14 +227,16 @@ class VDONinjaInstance extends InstanceBase {
 			let action = data.action
 			switch (action) {
 				case 'hangup':
-					delete this.states[data.streamID]
-					let hangup = this.streams.findIndex((o) => {
-						return o.id === data.streamID
-					})
-					this.streams.splice(hangup, 1)
-					this.initActions()
-					this.initVariables()
-					this.initFeedbacks()
+					{
+						delete this.states[data.streamID]
+						let hangup = this.streams.findIndex((o) => {
+							return o.id === data.streamID
+						})
+						this.streams.splice(hangup, 1)
+						this.initActions()
+						this.initVariables()
+						this.initFeedbacks()
+					}
 					break
 				case 'newViewConnection':
 					this.ws.send(`{"action": "getDetails"}`)
@@ -246,14 +248,16 @@ class VDONinjaInstance extends InstanceBase {
 					this.initFeedbacks()
 					break
 				case 'endViewConnection':
-					delete this.states[data.value]
-					let endView = this.streams.findIndex((o) => {
-						return o.id === data.value
-					})
-					this.streams.splice(endView, 1)
-					this.initActions()
-					this.initVariables()
-					this.initFeedbacks()
+					{
+						delete this.states[data.value]
+						let endView = this.streams.findIndex((o) => {
+							return o.id === data.value
+						})
+						this.streams.splice(endView, 1)
+						this.initActions()
+						this.initVariables()
+						this.initFeedbacks()
+					}
 					break
 				case 'positionChange':
 					this.ws.send(`{"action": "getDetails"}`)
