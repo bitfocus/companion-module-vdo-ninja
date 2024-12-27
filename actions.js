@@ -116,7 +116,7 @@ export function getActions() {
 			name: 'Local: Reload',
 			description: 'Reload the current page',
 			options: [],
-			callback: (action) => {
+			callback: () => {
 				this.sendRequest('reload')
 			},
 		},
@@ -125,7 +125,7 @@ export function getActions() {
 			name: 'Local: Hang Up',
 			description: 'Hang up the current connection.',
 			options: [],
-			callback: (action) => {
+			callback: () => {
 				this.sendRequest('hangup')
 			},
 		},
@@ -186,7 +186,7 @@ export function getActions() {
 			name: 'Local: Raise Hand',
 			description: 'Toggles whether your hand is raised or not',
 			options: [],
-			callback: (action) => {
+			callback: () => {
 				this.sendRequest('togglehand')
 			},
 		},
@@ -195,7 +195,7 @@ export function getActions() {
 			name: 'Local: Screen Share',
 			description: 'Toggles screen sharing on or off - will prompt you to select the screen',
 			options: [],
-			callback: (action) => {
+			callback: () => {
 				this.sendRequest('togglescreenshare')
 			},
 		},
@@ -204,7 +204,7 @@ export function getActions() {
 			name: 'Local: Force Keyframe',
 			description: 'Forces the publisher of a stream to issue keyframes to all viewers',
 			options: [],
-			callback: (action) => {
+			callback: () => {
 				this.sendRequest('forceKeyframe')
 			},
 		},
@@ -213,7 +213,7 @@ export function getActions() {
 			name: 'Local: Next Slide',
 			description: 'For PowerPoint usage',
 			options: [],
-			callback: (action) => {
+			callback: () => {
 				this.sendRequest('nextSlide')
 			},
 		},
@@ -222,7 +222,7 @@ export function getActions() {
 			name: 'Local: Previous Slide',
 			description: 'For PowerPoint usage',
 			options: [],
-			callback: (action) => {
+			callback: () => {
 				this.sendRequest('previousSlide')
 			},
 		},

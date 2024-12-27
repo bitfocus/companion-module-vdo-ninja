@@ -4,11 +4,14 @@
 	"main": "index.js",
 	"type": "module",
 	"scripts": {
-		"format": "prettier -w ."
+		"format": "prettier -w .",
+		"package": "companion-module-build",
+		"lint:raw": "eslint",
+		"lint": "yarn lint:raw ."
 	},
 	"license": "MIT",
 	"dependencies": {
-		"@companion-module/base": "~1.11.2",
+		"@companion-module/base": "~1.11.3",
 		"ws": "^8.18.0"
 	},
 	"repository": {
@@ -17,7 +20,12 @@
 	},
 	"devDependencies": {
 		"@companion-module/tools": "^2.1.1",
+		"eslint": "^9.17.0",
 		"prettier": "^3.4.2"
 	},
-	"prettier": "@companion-module/tools/.prettierrc.json"
+	"engines": {
+		"node": "^22.12"
+	},
+	"prettier": "@companion-module/tools/.prettierrc.json",
+	"packageManager": "yarn@4.5.3"
 }
