@@ -227,6 +227,106 @@ export function getActions() {
 			},
 		},
 
+		ptzPan: {
+			name: 'Local: Pan Camera',
+			description: 'Pan camera left (-) or right (+)',
+			options: [
+				{
+					type: 'number',
+					label: 'Adjustment Amount',
+					id: 'value',
+					default: 10,
+					min: -100,
+					max: 100,
+					range: true,
+				},
+			],
+			callback: (action) => {
+				const decimalValue = action.options.value / 100
+				this.sendRequest('pan', null, decimalValue, true)
+			},
+		},
+
+		ptzTilt: {
+			name: 'Local: Tilt Camera',
+			description: 'Tilt camera up (-) or down (+)',
+			options: [
+				{
+					type: 'number',
+					label: 'Adjustment Amount',
+					id: 'value',
+					default: 10,
+					min: -100,
+					max: 100,
+					range: true,
+				},
+			],
+			callback: (action) => {
+				const decimalValue = action.options.value / 100
+				this.sendRequest('tilt', null, decimalValue)
+			},
+		},
+
+		ptzZoom: {
+			name: 'Local: Zoom Camera',
+			description: 'Zoom camera in (-) or out (+)',
+			options: [
+				{
+					type: 'number',
+					label: 'Adjustment Amount',
+					id: 'value',
+					default: 10,
+					min: -100,
+					max: 100,
+					range: true,
+				},
+			],
+			callback: (action) => {
+				const decimalValue = action.options.value / 100
+				this.sendRequest('zoom', null, decimalValue)
+			},
+		},
+
+		ptzFocus: {
+			name: 'Local: Focus Camera',
+			description: 'Focus camera near (-) or far (+)',
+			options: [
+				{
+					type: 'number',
+					label: 'Adjustment Amount',
+					id: 'value',
+					default: 10,
+					min: -100,
+					max: 100,
+					range: true,
+				},
+			],
+			callback: (action) => {
+				const decimalValue = action.options.value / 100
+				this.sendRequest('focus', null, decimalValue)
+			},
+		},
+
+		ptzExposure: {
+			name: 'Local: Camera Exposure',
+			description: 'Set camera exposure',
+			options: [
+				{
+					type: 'number',
+					label: 'Expsoure (0 to 100)',
+					id: 'value',
+					default: 50,
+					min: 0,
+					max: 100,
+					range: true,
+				},
+			],
+			callback: (action) => {
+				const decimalValue = action.options.value / 100
+				this.sendRequest('exposure', null, decimalValue)
+			},
+		},
+
 		group: {
 			name: 'Director: Self in Group',
 			description: 'Toggle the director of a room in/out of a specified group room',
