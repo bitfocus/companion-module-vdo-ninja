@@ -85,10 +85,12 @@ export function getActions() {
 					label: 'Message',
 					id: 'value',
 					default: '',
+					useVariables: true,
 				},
 			],
-			callback: (action) => {
-				this.sendRequest('sendChat', null, action.options.value)
+			callback: async (action, context) => {
+				const value = await context.parseVariablesInString(action.options.value)
+				this.sendRequest('sendChat', null, value)
 			},
 		},
 
@@ -450,19 +452,24 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
+					useVariables: true,
 				},
 				{
 					type: 'textinput',
 					label: 'Destination room',
 					id: 'value',
 					default: '',
+					useVariables: true,
 				},
 			],
-			callback: (action) => {
-				this.sendRequest('forward', action.options.target, action.options.value)
+			callback: async (action, context) => {
+				const target = await context.parseVariablesInString(action.options.target)
+				const value = await context.parseVariablesInString(action.options.value)
+				this.sendRequest('forward', target, value)
 			},
 		},
 
@@ -472,19 +479,24 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
+					useVariables: true,
 				},
 				{
 					type: 'textinput',
 					label: 'Scene name or ID (0 to 8)',
 					id: 'value',
 					default: '1',
+					useVariables: true,
 				},
 			],
-			callback: (action) => {
-				this.sendRequest('addScene', action.options.target, action.options.value)
+			callback: async (action, context) => {
+				const target = await context.parseVariablesInString(action.options.target)
+				const value = await context.parseVariablesInString(action.options.value)
+				this.sendRequest('addScene', target, value)
 			},
 		},
 
@@ -494,19 +506,24 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
+					useVariables: true,
 				},
 				{
 					type: 'textinput',
 					label: 'Scene name or ID (0 to 8)',
 					id: 'value',
 					default: '1',
+					useVariables: true,
 				},
 			],
-			callback: (action) => {
-				this.sendRequest('muteScene', action.options.target, action.options.value)
+			callback: async (action, context) => {
+				const target = await context.parseVariablesInString(action.options.target)
+				const value = await context.parseVariablesInString(action.options.value)
+				this.sendRequest('muteScene', target, value)
 			},
 		},
 
@@ -516,19 +533,24 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
+					useVariables: true,
 				},
 				{
 					type: 'textinput',
 					label: 'Group ID (1 to 8)',
 					id: 'value',
 					default: '1',
+					useVariables: true,
 				},
 			],
-			callback: (action) => {
-				this.sendRequest('group', action.options.target, action.options.value)
+			callback: async (action, context) => {
+				const target = await context.parseVariablesInString(action.options.target)
+				const value = await context.parseVariablesInString(action.options.value)
+				this.sendRequest('group', target, value)
 			},
 		},
 
@@ -538,13 +560,16 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
+					useVariables: true,
 				},
 			],
-			callback: (action) => {
-				this.sendRequest('mic', action.options.target)
+			callback: async (action, context) => {
+				const target = await context.parseVariablesInString(action.options.target)
+				this.sendRequest('mic', target)
 			},
 		},
 
@@ -554,13 +579,16 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
+					useVariables: true,
 				},
 			],
-			callback: (action) => {
-				this.sendRequest('hangup', action.options.target)
+			callback: async (action, context) => {
+				const target = await context.parseVariablesInString(action.options.target)
+				this.sendRequest('hangup', target)
 			},
 		},
 
@@ -570,13 +598,16 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
+					useVariables: true,
 				},
 			],
-			callback: (action) => {
-				this.sendRequest('soloChat', action.options.target, null)
+			callback: async (action, context) => {
+				const target = await context.parseVariablesInString(action.options.target)
+				this.sendRequest('soloChat', target, null)
 			},
 		},
 
@@ -586,13 +617,16 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
+					useVariables: true,
 				},
 			],
-			callback: (action) => {
-				this.sendRequest('soloChatBidirectional', action.options.target, null)
+			callback: async (action, context) => {
+				const target = await context.parseVariablesInString(action.options.target)
+				this.sendRequest('soloChatBidirectional', target, null)
 			},
 		},
 
@@ -602,13 +636,16 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
+					useVariables: true,
 				},
 			],
-			callback: (action) => {
-				this.sendRequest('speaker', action.options.target)
+			callback: async (action, context) => {
+				const target = await context.parseVariablesInString(action.options.target)
+				this.sendRequest('speaker', target)
 			},
 		},
 
@@ -618,13 +655,16 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
+					useVariables: true,
 				},
 			],
-			callback: (action) => {
-				this.sendRequest('display', action.options.target)
+			callback: async (action, context) => {
+				const target = await context.parseVariablesInString(action.options.target)
+				this.sendRequest('display', target)
 			},
 		},
 
@@ -634,19 +674,24 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
+					useVariables: true,
 				},
 				{
 					type: 'textinput',
 					label: 'Message',
 					id: 'value',
 					default: '',
+					useVariables: true,
 				},
 			],
-			callback: (action) => {
-				this.sendRequest('sendDirectorChat', action.options.target, action.options.value)
+			callback: async (action, context) => {
+				const target = await context.parseVariablesInString(action.options.target)
+				const value = await context.parseVariablesInString(action.options.value)
+				this.sendRequest('sendDirectorChat', target, value)
 			},
 		},
 
@@ -656,13 +701,16 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
+					useVariables: true,
 				},
 			],
-			callback: (action) => {
-				this.sendRequest('forceKeyframe', action.options.target)
+			callback: async (action, context) => {
+				const target = await context.parseVariablesInString(action.options.target)
+				this.sendRequest('forceKeyframe', target)
 			},
 		},
 
@@ -672,13 +720,16 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
+					useVariables: true,
 				},
 			],
-			callback: (action) => {
-				this.sendRequest('soloVideo', action.options.target)
+			callback: async (action, context) => {
+				const target = await context.parseVariablesInString(action.options.target)
+				this.sendRequest('soloVideo', target)
 			},
 		},
 
@@ -688,9 +739,11 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
+					useVariables: true,
 				},
 				{
 					type: 'number',
@@ -702,8 +755,9 @@ export function getActions() {
 					range: false,
 				},
 			],
-			callback: (action) => {
-				this.sendRequest('volume', action.options.target, action.options.value)
+			callback: async (action, context) => {
+				const target = await context.parseVariablesInString(action.options.target)
+				this.sendRequest('volume', target, action.options.value)
 			},
 		},
 	}
