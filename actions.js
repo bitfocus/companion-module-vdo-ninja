@@ -452,7 +452,8 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
 					useVariables: true,
@@ -478,7 +479,8 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
 					useVariables: true,
@@ -504,7 +506,8 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
 					useVariables: true,
@@ -530,7 +533,8 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
 					useVariables: true,
@@ -556,7 +560,8 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
 					useVariables: true,
@@ -574,7 +579,8 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
 					useVariables: true,
@@ -592,7 +598,8 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
 					useVariables: true,
@@ -610,7 +617,8 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
 					useVariables: true,
@@ -628,7 +636,8 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
 					useVariables: true,
@@ -646,7 +655,8 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
 					useVariables: true,
@@ -664,7 +674,8 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
 					useVariables: true,
@@ -690,7 +701,8 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
 					useVariables: true,
@@ -708,7 +720,8 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
 					useVariables: true,
@@ -726,7 +739,8 @@ export function getActions() {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Guest (position or stream ID)',
+					label: 'Guest',
+					description: 'Position number or stream ID',
 					id: 'target',
 					default: '1',
 					useVariables: true,
