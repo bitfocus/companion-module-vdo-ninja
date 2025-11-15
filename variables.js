@@ -11,6 +11,7 @@ export function getVariables() {
 				variables.push({ variableId: `director_camera`, name: `Director - Camera` })
 				variables.push({ variableId: `director_speaker`, name: `Director - Speaker` })
 			} else if (data.position) {
+				variables.push({ variableId: `guest_${data.position}_streamID`, name: `Guest ${data.position} - StreamID` })
 				variables.push({ variableId: `guest_${data.position}_mic`, name: `Guest ${data.position} ${name} - Mic` })
 				variables.push({ variableId: `guest_${data.position}_camera`, name: `Guest ${data.position} ${name} - Camera` })
 				variables.push({ variableId: `guest_${data.position}_label`, name: `Guest ${data.position} - Label` })
@@ -49,6 +50,7 @@ export function updateVariables() {
 				})
 			} else if (data.position) {
 				this.setVariableValues({
+					[`guest_${data.position}_streamID`]: data.streamID,
 					[`guest_${data.position}_mic`]: data.muted || data.others?.['mute-guest'] == 1 ? 'Muted' : 'Unmuted',
 					[`guest_${data.position}_camera`]: data.videoMuted || data.others?.['hide-guest'] == 1 ? 'Muted' : 'Unmuted',
 					[`guest_${data.position}_label`]: label,
