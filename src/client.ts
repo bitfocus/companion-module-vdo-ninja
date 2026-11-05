@@ -79,6 +79,8 @@ export class VdoNinjaClient extends EventEmitter<ClientEvents> {
 	#destroyed = false
 	#nextCid = 1
 	readonly #pending = new Map<number, PendingRequest>()
+	/** A hung up page stays attached and goes on listing itself in getDetails, until it reports itself as back */
+	readonly #hungUp = new Set<string>()
 	#detailsTimer: NodeJS.Timeout | undefined
 	#detailsInFlight: number | undefined
 	#detailsQueued = false
@@ -132,15 +134,19 @@ export class VdoNinjaClient extends EventEmitter<ClientEvents> {
 		})
 
 		ws.on('message', (data: WebSocket.RawData) => {
+			if (ws !== this.#ws) return
 			// eslint-disable-next-line @typescript-eslint/no-base-to-string
 			this.handleMessage(data.toString())
 		})
 
 		ws.on('error', (error: NodeJS.ErrnoException) => {
+			// Closing a socket that is still connecting raises an error, after connect() or destroy() replaced it
+			if (ws !== this.#ws) return
 			// Only report the first failure of a run, not every reconnect attempt
 			if (!this.#failed) {
 				this.#failed = true
-				this.emit('status', 'connection_failure', null)
+				// A connection that worked before stays disconnected while it retries
+				if (!this.#everOpened) this.emit('status', 'connection_failure', null)
 				if (error?.code == 'ENOTFOUND') {
 					this.emit('log', 'error', `Unable to reach ${this.#options.url}`)
 				} else {
@@ -294,7 +300,7 @@ export class VdoNinjaClient extends EventEmitter<ClientEvents> {
 				const request = this.#settle(cid)
 				if (action == 'getDetails') {
 					// Another controller's getDetails reply is just as current, so it is applied too
-					this.#applyDetails(result)
+					this.#applyDetails(result, request !== undefined)
 				} else if (request?.target === null) {
 					this.#applyResult(request, result)
 				} else if (request) {
@@ -312,13 +318,25 @@ export class VdoNinjaClient extends EventEmitter<ClientEvents> {
 		}
 	}
 
-	/** Stores the details of each stream given, returning false when there were none */
-	#applyDetails(result: JsonValue): boolean {
-		const entries = parseDetails(result)
-		if (entries.length === 0) return false
+	/**
+	 * Stores the details of each stream given, returning false when there were none. `complete` says
+	 * the result lists every stream, so any others have gone; a details update may list only some.
+	 */
+	#applyDetails(result: JsonValue, complete: boolean): boolean {
+		const entries = parseDetails(result).filter((details) => !this.#hungUp.has(details.streamID))
 
 		let streamsChanged = false
 		let stateChanged = false
+		// A failed getDetails gives a string or null, which says nothing about which streams exist
+		if (complete && typeof result === 'object' && result !== null) {
+			const reported = new Set(entries.map((details) => details.streamID))
+			for (const streamID of Object.keys(this.states)) {
+				if (reported.has(streamID)) continue
+				this.#forgetStream(streamID)
+				streamsChanged = true
+				stateChanged = true
+			}
+		}
 		for (const details of entries) {
 			const changes = this.#storeDetails(details)
 			streamsChanged ||= changes.streams
@@ -326,7 +344,7 @@ export class VdoNinjaClient extends EventEmitter<ClientEvents> {
 		}
 		if (streamsChanged) this.emit('streamsChanged')
 		if (stateChanged) this.emit('stateChanged')
-		return true
+		return entries.length > 0
 	}
 
 	/**
@@ -363,8 +381,15 @@ export class VdoNinjaClient extends EventEmitter<ClientEvents> {
 	}
 
 	processUpdate(data: ApiUpdate): void {
+		if (data.action === 'hangup' && data.streamID) this.#hungUp.add(data.streamID)
+
 		if (data.action === 'details') {
-			if (!this.#applyDetails(data.value)) this.requestDetails()
+			// Only a page that is live pushes its own details, as it does after reloading
+			for (const { streamID } of parseDetails(data.value)) this.#hungUp.delete(streamID)
+			const known = this.streams.length
+			const found = this.#applyDetails(data.value, false)
+			// A page that has just attached or reloaded reports only itself, and may never announce its guests
+			if (!found || this.streams.length > known) this.requestDetails()
 			return
 		}
 
@@ -377,6 +402,8 @@ export class VdoNinjaClient extends EventEmitter<ClientEvents> {
 					return
 				case 'endViewConnection':
 					this.#removeStream(data.value)
+					// The remaining guests move up a position, which isn't always announced
+					this.requestDetails()
 					return
 				case 'director':
 					if (state.director !== data.value) {
@@ -416,10 +443,14 @@ export class VdoNinjaClient extends EventEmitter<ClientEvents> {
 
 	#removeStream(streamID: string): void {
 		if (!(streamID in this.states)) return
+		this.#forgetStream(streamID)
+		this.emit('streamsChanged')
+		this.emit('stateChanged')
+	}
+
+	#forgetStream(streamID: string): void {
 		delete this.states[streamID]
 		const index = this.streams.findIndex((o) => o.id === streamID)
 		if (index !== -1) this.streams.splice(index, 1)
-		this.emit('streamsChanged')
-		this.emit('stateChanged')
 	}
 }

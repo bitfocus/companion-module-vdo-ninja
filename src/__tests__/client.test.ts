@@ -113,6 +113,49 @@ describe('VdoNinjaClient state', () => {
 		expect(client.states.guestStream.others).toEqual({ 'mute-guest': '1', 'hide-guest': '1' })
 	})
 
+	it('keeps streams missing from a getDetails reply to another controller', () => {
+		const client = makeClient()
+		withStreams(client, director, guest)
+		withStreams(client, director)
+		expect(client.streams.map((s) => s.id)).toEqual(['directorStream', 'guestStream'])
+	})
+
+	it('keeps streams missing from a details update, which may be partial', () => {
+		const client = makeClient()
+		withStreams(client, director, guest)
+		client.handleMessage(json({ update: { streamID: 'directorStream', action: 'details', value: statesOf(guest) } }))
+		expect(client.streams.map((s) => s.id)).toEqual(['directorStream', 'guestStream'])
+	})
+
+	it('removes a stream that hangs up without a value', () => {
+		const client = makeClient()
+		withStreams(client, director, guest)
+		client.handleMessage(json({ update: { streamID: 'guestStream', action: 'hangup' } }))
+		expect(client.streams.map((s) => s.id)).toEqual(['directorStream'])
+	})
+
+	it('keeps a hung up stream gone though its page goes on listing it in getDetails', () => {
+		const client = makeClient()
+		withStreams(client, local)
+		client.handleMessage(json({ update: { streamID: 'localStream', action: 'hangup', value: true } }))
+
+		withStreams(client, local)
+
+		expect(client.streams).toEqual([])
+		expect(client.states.localStream).toBeUndefined()
+	})
+
+	it('brings a hung up stream back when its page reports itself again, as after a reload', () => {
+		const client = makeClient()
+		withStreams(client, local)
+		client.handleMessage(json({ update: { streamID: 'localStream', action: 'hangup', value: true } }))
+
+		client.handleMessage(json({ update: { streamID: 'localStream', action: 'details', value: statesOf(local) } }))
+		withStreams(client, local)
+
+		expect(client.streams.map((s) => s.id)).toEqual(['localStream'])
+	})
+
 	it('removes a stream that hangs up', () => {
 		const client = makeClient()
 		withStreams(client, director, guest)
@@ -272,6 +315,21 @@ describe('VdoNinjaClient connection', () => {
 		expect(relay.members('test-api')).toBe(1)
 	})
 
+	it('reports nothing when destroyed while still connecting', async () => {
+		const client = makeClient(relay.url)
+		const status = vi.fn()
+		const log = vi.fn()
+		client.on('status', status)
+		client.on('log', log)
+
+		client.connect()
+		client.destroy()
+
+		await new Promise((resolve) => setTimeout(resolve, 50))
+		expect(status).not.toHaveBeenCalled()
+		expect(log).not.toHaveBeenCalled()
+	})
+
 	describe('command results', () => {
 		type Request = { action: string; cid: number }
 
@@ -352,6 +410,69 @@ describe('VdoNinjaClient connection', () => {
 			await reply(statesOf(local, guest))
 			await vi.waitFor(() => expect(fromClient).toHaveLength(3))
 			expect(fromClient.at(-1)).toMatchObject({ action: 'getDetails' })
+			client.destroy()
+		})
+
+		it('forgets streams missing from the reply to its own getDetails', async () => {
+			const client = await connected()
+			const streamsChanged = vi.fn()
+			const stateChanged = vi.fn()
+			client.on('streamsChanged', streamsChanged)
+			client.on('stateChanged', stateChanged)
+
+			client.requestDetails()
+			await reply(statesOf(local))
+
+			await vi.waitFor(() => expect(client.streams.map((s) => s.id)).toEqual(['localStream']))
+			expect(Object.keys(client.states)).toEqual(['localStream'])
+			expect(streamsChanged).toHaveBeenCalledOnce()
+			expect(stateChanged).toHaveBeenCalledOnce()
+			client.destroy()
+		})
+
+		it('forgets every stream when its own getDetails reports none', async () => {
+			const client = await connected()
+			client.requestDetails()
+			await reply({})
+
+			await vi.waitFor(() => expect(client.streams).toEqual([]))
+			client.destroy()
+		})
+
+		it('keeps its streams when its own getDetails fails', async () => {
+			const client = await connected()
+			client.requestDetails()
+			await reply('timeout')
+
+			await vi.waitFor(() => expect(client.pendingRequests).toBe(0))
+			expect(client.streams).toHaveLength(2)
+			client.destroy()
+		})
+
+		it('asks for every stream when a details update reveals a new one, as after the page reloads', async () => {
+			const client = await connected()
+			page.send(json({ update: { streamID: 'directorStream', action: 'details', value: statesOf(director) } }))
+			await vi.waitFor(() => expect(fromClient).toHaveLength(2))
+			expect(fromClient.at(-1)).toMatchObject({ action: 'getDetails' })
+			client.destroy()
+		})
+
+		it('asks for fresh positions when a guest leaves', async () => {
+			const client = await connected()
+			page.send(json({ update: { streamID: 'localStream', action: 'endViewConnection', value: 'guestStream' } }))
+			await vi.waitFor(() => expect(fromClient).toHaveLength(2))
+			expect(fromClient.at(-1)).toMatchObject({ action: 'getDetails' })
+			client.destroy()
+		})
+
+		it('does not ask again when a details update only changes a known stream', async () => {
+			const client = await connected()
+			page.send(
+				json({ update: { streamID: 'guestStream', action: 'details', value: statesOf({ ...guest, muted: true }) } }),
+			)
+			await vi.waitFor(() => expect(client.states.guestStream.muted).toBe(true))
+			await new Promise((resolve) => setTimeout(resolve, 60))
+			expect(fromClient).toHaveLength(1)
 			client.destroy()
 		})
 
@@ -467,6 +588,34 @@ describe('VdoNinjaClient heartbeat and backoff', () => {
 		expect(relay.members('test-api')).toBe(1)
 		client.destroy()
 		await relay.stop()
+	})
+
+	it('stays disconnected while reconnecting to a server that has gone away', async () => {
+		const relay = await TestRelay.start()
+		const client = makeClient(relay.url)
+		const status = vi.fn()
+		const log = vi.fn()
+		client.on('status', status)
+		client.on('log', log)
+		client.connect()
+		await vi.waitFor(() => expect(status).toHaveBeenLastCalledWith('ok', null))
+
+		await relay.stop()
+
+		await vi.waitFor(() => expect(log).toHaveBeenCalledWith('error', expect.stringContaining('WebSocket')))
+		expect(status).toHaveBeenLastCalledWith('disconnected', 'Reconnecting')
+		expect(status).not.toHaveBeenCalledWith('connection_failure', null)
+		client.destroy()
+	})
+
+	it('reports a connection failure when it has never connected', async () => {
+		const client = makeClient()
+		const status = vi.fn()
+		client.on('status', status)
+		client.connect()
+
+		await vi.waitFor(() => expect(status).toHaveBeenCalledWith('connection_failure', null))
+		client.destroy()
 	})
 
 	it('backs off between failed attempts, up to the maximum', () => {

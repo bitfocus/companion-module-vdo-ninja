@@ -15,7 +15,7 @@ export type StreamState = {
 	/** Mixer slot, or false when unassigned; only reported when slots are in use */
 	slot?: number | false
 	/** Groups the guest is in, such as ["2"] */
-	group?: string[]
+	group?: (string | number)[]
 }
 
 export type StreamChoice = {

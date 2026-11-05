@@ -26,7 +26,7 @@ describe('director commands against VDO.Ninja', () => {
 	const guest = () => harness.client.states[guestID]
 
 	beforeAll(async () => {
-		harness = await VdoNinjaHarness.start()
+		harness = await VdoNinjaHarness.start('direct')
 		await harness.open({ director: room }, true)
 		harness.client.connect()
 		guestPage = await harness.open({ room, push: guestID, label: 'Alice', autostart: '', webcam: '' }, false)

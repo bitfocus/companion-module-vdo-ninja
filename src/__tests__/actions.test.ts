@@ -35,7 +35,7 @@ describe('actions', () => {
 		['ptzTilt', { value: 25 }, 'tilt', { value: 0.25 }],
 		['ptzZoom', { value: 10 }, 'zoom', { value: 0.1 }],
 		['ptzFocus', { value: -10 }, 'focus', { value: -0.1 }],
-		['ptzExposure', { value: 75 }, 'exposure', { value: 0.75 }],
+		['ptzExposure', { value: 75 }, 'exposure', { value: 0.75, value2: 'abs' }],
 		['group', { value: 3 }, 'group', { value: 3 }],
 		['joinGroup', { value: 3 }, 'joinGroup', { value: 3 }],
 		['leaveGroup', { value: 3 }, 'leaveGroup', { value: 3 }],

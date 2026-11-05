@@ -7,3 +7,5 @@ package-lock.json
 DEBUG-*
 /.yarn
 /.vscode
+
+/.vdo-ninja

@@ -27,7 +27,7 @@ describe('local commands against VDO.Ninja', () => {
 	}
 
 	beforeAll(async () => {
-		harness = await VdoNinjaHarness.start()
+		harness = await VdoNinjaHarness.start('direct')
 		page = await harness.open({ push: streamID, autostart: '', webcam: '' }, true)
 		harness.client.connect()
 		await until(() => harness.client.states[streamID] !== undefined)

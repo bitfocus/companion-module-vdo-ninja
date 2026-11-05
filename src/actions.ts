@@ -380,7 +380,7 @@ export function GetActions(
 			],
 			callback: (action) => {
 				const decimalValue = action.options.value / 100
-				client.sendLocal('exposure', { value: decimalValue })
+				client.sendLocal('exposure', { value: decimalValue, value2: 'abs' })
 			},
 		},
 

@@ -9,7 +9,7 @@ Control [VDO.Ninja](https://vdo.ninja) settings remotely.
 - Add the same API ID in the Companion module settings. Anyone with the API ID can control your VDO.Ninja page, so the module keeps it in Companion's secrets store rather than the regular settings
 - If you host your own API websocket server, enable **Custom Websockets Server** and enter its domain only (no `wss://`, port or path)
 
-This module needs Companion 4.3 or newer.
+This module needs Companion 5.0 or newer.
 
 If the connection drops, the module reconnects on its own and shows **Disconnected** until it is back. Commands pressed while disconnected are not sent and are noted in the module's log.
 

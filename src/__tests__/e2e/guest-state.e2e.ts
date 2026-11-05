@@ -23,7 +23,7 @@ describe('guest state against VDO.Ninja', () => {
 	const variables = () => GetVariableValues(harness.client.states)
 
 	beforeAll(async () => {
-		harness = await VdoNinjaHarness.start()
+		harness = await VdoNinjaHarness.start('direct')
 		// Slot mode makes the director report each guest's mixer slot
 		await harness.open({ director: room, slotmode: '1' }, true)
 		harness.client.connect()

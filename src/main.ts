@@ -112,6 +112,8 @@ export default class VDONinjaInstance extends InstanceBase<ModuleSchema> {
 		// The definitions were replaced, so send every value again
 		this.#sentValues = {}
 		this.updateVariableValues()
+		// A replaced client won't report a state change for the streams that went with it
+		this.checkAllFeedbacks()
 	}
 
 	updateVariableValues(): void {

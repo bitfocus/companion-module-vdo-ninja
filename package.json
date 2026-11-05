@@ -16,7 +16,9 @@
 		"test": "vitest --run",
 		"test:watch": "vitest",
 		"test:e2e": "vitest --run --config vitest.e2e.config.ts",
-		"test:e2e:install": "playwright install chromium"
+		"test:e2e:install": "playwright install chromium",
+		"test:e2e:fetch": "git clone --quiet --depth 1 --single-branch --branch v30.2 https://github.com/steveseguin/vdo.ninja.git .vdo-ninja",
+		"test:e2e:local": "VDO_NINJA_DIR=.vdo-ninja vitest --run --config vitest.e2e.config.ts"
 	},
 	"license": "MIT",
 	"dependencies": {

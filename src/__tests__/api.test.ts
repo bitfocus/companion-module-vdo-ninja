@@ -63,6 +63,13 @@ describe('parseMessage', () => {
 		})
 	})
 
+	it('accepts a hangup whatever its value, as nothing reads it', () => {
+		expect(parseMessage(json({ update: { streamID: 'abc', action: 'hangup' } }))).toEqual({
+			type: 'update',
+			update: { streamID: 'abc', action: 'hangup', value: null },
+		})
+	})
+
 	it('ignores updates with an invalid stream ID', () => {
 		expect(parseMessage(json({ update: { streamID: '__proto__', action: 'muted', value: true } }))).toEqual({
 			type: 'ignored',
@@ -135,6 +142,37 @@ describe('parseDetails', () => {
 			a: { streamID: 'one', muted: true, miscellaneous: { CPU: '14 threads' }, chunkedBufferDefault: 3000 },
 		})
 		expect(stream).toEqual({ streamID: 'one', muted: true })
+	})
+
+	it.each([
+		['label', 3],
+		['director', 'yes'],
+		['position', '$(bad)'],
+		['position', 1.5],
+		['localStream', 1],
+		['muted', 'true'],
+		['others', 'x'],
+		['scenes', ['1']],
+		['featured', 1],
+		['slot', 'one'],
+		['group', '2'],
+		['group', [{}]],
+	])('drops a %s field holding %j, keeping the stream', (field, value) => {
+		expect(parseDetails({ a: { streamID: 'one', [field]: value } })).toEqual([{ streamID: 'one' }])
+	})
+
+	it('keeps fields with every shape VDO.Ninja reports', () => {
+		const details = {
+			streamID: 'one',
+			label: false,
+			director: null,
+			position: null,
+			others: { volume: '50', 'hand-raised': false },
+			scenes: { '1': true },
+			slot: false,
+			group: ['2', 3],
+		}
+		expect(parseDetails({ a: details })).toEqual([details])
 	})
 
 	it('returns nothing for non-object results', () => {

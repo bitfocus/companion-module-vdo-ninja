@@ -83,8 +83,7 @@ export interface LocalCommands {
 	focus: Ptz
 	pan: Ptz
 	tilt: Ptz
-	/** 0 (dark) to 1 (bright) */
-	exposure: Value<NumberLike>
+	exposure: Ptz
 	/** 0 is the auto mixer, 1+ the custom layouts from &layouts, or a layout to apply directly */
 	layout: Value<number | LayoutItem[]>
 }
@@ -170,7 +169,6 @@ const BooleanUpdateActions = [
 	'videoMuted',
 	'speakerMuted',
 	'director',
-	'hangup',
 	'directorMuted',
 	'directorVideoHide',
 	'remoteVideoMuted',
@@ -188,6 +186,7 @@ type UpdateBase = { streamID: string | null }
 
 export type ApiUpdate =
 	| (UpdateBase & { action: BooleanUpdateAction; value: boolean })
+	| (UpdateBase & { action: 'hangup'; value: JsonValue })
 	| (UpdateBase & { action: 'endViewConnection'; value: string })
 	| (UpdateBase & { action: RefreshUpdateAction; value: JsonValue })
 
@@ -213,26 +212,34 @@ export function isValidStreamID(value: unknown): value is string {
 	return typeof value === 'string' && StreamIDPattern.test(value) && value !== '__proto__'
 }
 
-/** The getDetails fields the module reads; everything else (device info, buffers, stats) is dropped */
-const DetailsFields = [
-	'streamID',
-	'label',
-	'director',
-	'position',
-	'localStream',
-	'muted',
-	'videoMuted',
-	'speakerMuted',
-	'others',
-	'scenes',
-	'featured',
-	'slot',
-	'group',
-] as const satisfies readonly (keyof StreamState)[]
-
 function isObject(value: unknown): value is JsonObject {
 	return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
+
+function isBoolean(value: unknown): boolean {
+	return typeof value === 'boolean'
+}
+
+/**
+ * The getDetails fields the module reads, with the shape each must have. Anything else (device info,
+ * buffers, stats) is dropped, as is a field of the wrong shape, as if VDO.Ninja had not reported it.
+ */
+const DetailsFields = {
+	label: (value) => typeof value === 'string' || value === false,
+	director: (value) => isBoolean(value) || value === null,
+	// Used in variable names
+	position: (value) => Number.isInteger(value) || value === null,
+	localStream: isBoolean,
+	muted: isBoolean,
+	videoMuted: isBoolean,
+	speakerMuted: isBoolean,
+	others: isObject,
+	scenes: isObject,
+	featured: isBoolean,
+	slot: (value) => typeof value === 'number' || value === false,
+	group: (value) =>
+		Array.isArray(value) && value.every((group) => typeof group === 'string' || typeof group === 'number'),
+} satisfies Record<Exclude<keyof StreamState, 'streamID'>, (value: unknown) => boolean>
 
 function includes<T extends string>(list: readonly T[], value: string): value is T {
 	return (list as readonly string[]).includes(value)
@@ -248,6 +255,9 @@ function parseUpdate(raw: unknown): ApiUpdate | string {
 
 	if (includes(BooleanUpdateActions, action)) {
 		return typeof value === 'boolean' ? { streamID, action, value } : `non-boolean value for ${action}`
+	}
+	if (action === 'hangup') {
+		return { streamID, action: 'hangup', value: value ?? null }
 	}
 	if (action === 'endViewConnection') {
 		return isValidStreamID(value)
@@ -296,9 +306,9 @@ export function parseDetails(result: JsonValue): StreamState[] {
 	const streams: StreamState[] = []
 	for (const entry of Object.values(result)) {
 		if (!isObject(entry) || !isValidStreamID(entry.streamID)) continue
-		const picked: Partial<Record<(typeof DetailsFields)[number], unknown>> = {}
-		for (const field of DetailsFields) {
-			if (field in entry) picked[field] = entry[field]
+		const picked: Record<string, unknown> = { streamID: entry.streamID }
+		for (const [field, isValid] of Object.entries(DetailsFields)) {
+			if (isValid(entry[field])) picked[field] = entry[field]
 		}
 		streams.push(picked as StreamState)
 	}
