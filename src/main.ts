@@ -43,10 +43,11 @@ export default class VDONinjaInstance extends InstanceBase<ModuleSchema> {
 		this.secrets = secrets
 		this.setActionDefinitions(GetActions(this))
 		this.setCompositeElementDefinitions(GetCompositeElements())
-		this.connect()
-		// Presets follow guest slots through variables, so unlike the rest they don't change with the streams
+		// Presets must follow the feedbacks they use, and follow guests through variables, so they're set once
+		this.updateDefinitions()
 		const { structure, presets } = GetPresets()
 		this.setPresetDefinitions(structure, presets)
+		this.connect()
 	}
 
 	async destroy(): Promise<void> {

@@ -181,7 +181,28 @@ export class VdoNinjaClient extends EventEmitter<ClientEvents> {
 			return
 		}
 		if (!this.#checkConnected(action)) return
-		this.#send(action, typeof target === 'number' ? target : text, args)
+		const cid = this.#send(action, typeof target === 'number' ? target : text, args)
+		// A volume dial steps from the guest's current volume, so it can't wait for getDetails to report it
+		if (cid !== null && action === 'volume') this.#applyGuestVolume(text, args)
+	}
+
+	/** The guest a command targets: by position for a number, otherwise by stream ID */
+	#findGuest(target: string): StreamState | undefined {
+		if (/^\d+$/.test(target)) {
+			const position = Number(target)
+			return Object.values(this.states).find((state) => !state.director && state.position === position)
+		}
+		return this.states[target]
+	}
+
+	#applyGuestVolume(target: string, args: { value?: JsonValue }): void {
+		const state = this.#findGuest(target)
+		const volume = Number(args.value)
+		if (!state || !Number.isFinite(volume)) return
+		const value = String(Math.round(volume))
+		if (state.others?.volume === value) return
+		state.others = { ...state.others, volume: value }
+		this.emit('stateChanged')
 	}
 
 	/** Requests awaiting a callback, for tests */

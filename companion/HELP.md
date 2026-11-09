@@ -33,6 +33,13 @@ If the connection drops, the module reconnects on its own and shows **Disconnect
 - Next Slide
 - Previous Slide
 - Pan, Tilt, Zoom and Focus Camera, and Camera Exposure (these need `&ptz` on the camera's VDO.Ninja page)
+- Camera Aspect Ratio
+- Camera Setting (any camera constraint, such as brightness or white balance)
+- Show Overlay Message (on this page only)
+- Tally Light
+- Active Speaker Layout
+- Mixer Layout (the layouts given with `&layouts`, or the automatic mixer)
+- Buffer Delay
 
 #### Director
 
@@ -45,10 +52,11 @@ If the connection drops, the module reconnects on its own and shows **Disconnect
 - Join View Group
 - Leave View Group
 - Toggle Highlight Video
+- Room Timer
 
 ##### Targets a room guest
 
-The **Guest** field takes the guest's slot number (1, 2, …) or stream ID, and can use variables. It is required: a command with an empty guest is not sent, as VDO.Ninja would run it on the director's own page instead.
+The **Guest** field takes the guest's position (1, 2, …) or stream ID, and can use variables. It is required: a command with an empty guest is not sent, as VDO.Ninja would run it on the director's own page instead.
 
 - Guest Mic
 - Guest Camera
@@ -65,6 +73,19 @@ The **Guest** field takes the guest's slot number (1, 2, …) or stream ID, and 
 - Two-way Solo Talk
 - Force Keyframe
 - Hang Up Guest
+- Set Guest Mixer Slot
+- Move Guest in Mix
+- Isolate Guest Audio Channel
+- Pinned Overlay Message to Guest
+- Guest Timer
+- Move Guest Camera (needs `&ptz` on the guest's VDO.Ninja page)
+- Guest Camera Autofocus
+- Mirror Guest Video
+- Rotate Guest Video
+- Request Guest Resolution
+- Request Guest Aspect Ratio
+- Set Guest Camera Size
+- Refresh Guest (video, connection, or both)
 
 ### Available Feedbacks
 
@@ -114,10 +135,10 @@ For the page the API ID is attached to, whether it is a director or a guest:
 
 There are presets for every action, available as soon as the module is added, before anything has connected.
 
-- **Guest buttons follow a slot, not a person.** Guest 1's button controls whoever is in slot 1, shows their name, and fades while the slot is empty. To point a button at another guest, change its `slot` local variable.
-- **Colours show real state.** The strip along the bottom turns green or red, for example, as the guest's mic changes. Solo Talk is the exception: VDO.Ninja doesn't report whether it is on, so those buttons can't show it.
+- **Guest buttons follow a position, not a person.** Guest 1's button controls whoever is first in the room, shows their name, and fades while no one is there. When a guest leaves, the others move up a position. To point a button at another guest, change its `guest` local variable.
+- **Colours show real state.** The strip along the bottom turns green or red, for example, as the guest's mic changes. VDO.Ninja doesn't report whether solo talk is on or whether the page is recording, so those buttons can't show it: the Record button shows what its next press does instead.
 - **Hang up, reload and transfer need holding for a second**, so they can't be pressed by accident.
-- **Purple buttons need configuring** after you drag them on: a message to send, a room to transfer to, or a bitrate.
+- **Purple buttons need configuring** after you drag them on: a message to send, a room to transfer to, a bitrate, or a camera setting.
 - **Volume and camera dials** are for rotary encoders. Pressing a volume dial returns it to its default.
 
 These presets draw their graphics with the button elements in Companion 5, and include a simpler version for software that can't draw those. The **Status Tile** and **Level Tile** elements they use are also available to add to your own buttons.

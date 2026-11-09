@@ -4,12 +4,13 @@ import type {
 	CompanionPresetFeedback,
 	CompanionPresetSection,
 	CompanionSimplePresetLocalVariable,
+	WithInternalFeedbacks,
 } from '@companion-module/base'
 import { Colors } from './graphics.js'
 import type { ModuleSchema } from './main.js'
 
-/** How many guest slots the slot-templated presets offer; a preset can be pointed at any other by its `slot` variable */
-const GuestSlots = 12
+/** How many guests the guest presets are offered for; a button can be pointed at any other by its `guest` variable */
+const GuestCount = 12
 const SceneCount = 8
 const GroupCount = 8
 
@@ -20,7 +21,7 @@ type Step = CompanionButtonStepActions<ModuleSchema>
 type LocalVariable = CompanionSimplePresetLocalVariable
 
 type FeedbackOn =
-	CompanionPresetFeedback<ModuleSchema['feedbacks']> extends infer T
+	CompanionPresetFeedback<WithInternalFeedbacks<ModuleSchema['feedbacks']>> extends infer T
 		? T extends { feedbackId: infer Id; options: infer Options }
 			? { feedbackId: Id; options: Options }
 			: never
@@ -67,11 +68,19 @@ type LevelTile = TileBase & {
 	accent: number
 }
 
+type Ptz = keyof typeof ptzDirections
+const ptzDirections = {
+	ptzPan: ['Pan', 'Left', 'Right'],
+	ptzTilt: ['Tilt', 'Up', 'Down'],
+	ptzZoom: ['Zoom', 'In', 'Out'],
+	ptzFocus: ['Focus', 'Near', 'Far'],
+} as const
+
 const expr = (value: string) => ({ isExpression: true as const, value })
 const quoted = (text: string) => `'${text}'`
 
 /** For text and text inputs, where a variable name can contain another variable */
-const guestVar = (name: string) => `$(VDO.Ninja:guest_$(local:slot)_${name})`
+const guestVar = (name: string) => `$(VDO.Ninja:guest_$(local:guest)_${name})`
 /** For expressions, which don't support that nesting directly */
 const guestExpr = (name: string) => `parseVariables('${guestVar(name)}', '')`
 const guestNumber = (name: string) => `round(${guestExpr(name)})`
@@ -80,20 +89,25 @@ const orDash = (variable: string) => `${variable} || '-'`
 
 const guestStream = expr(guestExpr('streamID'))
 const localStream = expr(localVar('streamID'))
-const guestTarget = '$(local:slot)'
+const guestTarget = '$(local:guest)'
 
-const slotVariable: LocalVariable = { variableType: 'simple', variableName: 'slot', startupValue: 1 }
+/** The guest's position in the room, which VDO.Ninja also calls their slot; not their mixer slot */
+const guestVariable: LocalVariable = { variableType: 'simple', variableName: 'guest', startupValue: 1 }
 
 const guestLabel = {
-	label: `${guestExpr('label')} || \`Guest \${$(local:slot)}\``,
+	label: `${guestExpr('label')} || \`Guest \${$(local:guest)}\``,
 	labelText: guestVar('label'),
 	present: guestExpr('streamID'),
-	localVariables: [slotVariable],
+	localVariables: [guestVariable],
 }
 const localLabel = { label: quoted('This page'), labelText: 'This page' }
 const directorLabel = { label: quoted('Director'), labelText: 'Director' }
 
-const press = (down: Step['down'], extra: Partial<Step> = {}): Step[] => [{ down, up: [], ...extra }]
+const press = (down: Step['down']): Step[] => [{ down, up: [] }]
+/** For a rotary encoder: pressing runs `down`, turning runs `left` or `right` */
+const dial = (down: Step['down'], left: Step['down'], right: Step['down']): Step[] => [
+	{ down, up: [], rotate_left: left, rotate_right: right },
+]
 const hold = (actions: Step['down']): Step[] => [
 	{ down: [], up: [], [HoldMs]: { options: { runWhileHeld: true }, actions } },
 ]
@@ -202,7 +216,6 @@ const templated = (
 	presetId: string,
 	variable: string,
 	values: { name: string; value: number | string }[],
-	common: Record<string, number> | undefined = undefined,
 ) => ({
 	id,
 	type: 'template' as const,
@@ -210,14 +223,13 @@ const templated = (
 	presetId,
 	templateVariableName: variable,
 	templateValues: values,
-	...(common ? { commonVariableValues: common } : {}),
 })
 
 const numbered = (count: number, name: string) =>
 	Array.from({ length: count }, (_, index) => ({ name: `${name} ${index + 1}`, value: index + 1 }))
 
-const perSlot = (presetId: string, name: string) =>
-	templated(presetId, name, presetId, 'slot', numbered(GuestSlots, 'Guest'))
+const perGuest = (presetId: string, name: string) =>
+	templated(presetId, name, presetId, 'guest', numbered(GuestCount, 'Guest'))
 
 export function GetPresets(): {
 	structure: CompanionPresetSection<ModuleSchema>[]
@@ -259,7 +271,7 @@ export function GetPresets(): {
 		})
 
 	const guestAudioVideo = [
-		perSlot(
+		perGuest(
 			addStatus({
 				id: 'guest_mic',
 				name: 'Guest Mic',
@@ -277,7 +289,7 @@ export function GetPresets(): {
 			}),
 			'Mic',
 		),
-		perSlot(
+		perGuest(
 			addStatus({
 				id: 'guest_camera',
 				name: 'Guest Camera',
@@ -295,7 +307,7 @@ export function GetPresets(): {
 			}),
 			'Camera',
 		),
-		perSlot(
+		perGuest(
 			addLevel({
 				id: 'guest_volume',
 				name: 'Guest Volume',
@@ -307,37 +319,32 @@ export function GetPresets(): {
 				valueText: guestVar('volume'),
 				max: 200,
 				accent: Colors.live,
-				steps: press([{ actionId: 'guestVolume', options: { target: guestTarget, value: 100 } }], {
-					rotate_left: [
+				steps: dial(
+					[{ actionId: 'guestVolume', options: { target: guestTarget, value: 100 } }],
+					[
 						{
 							actionId: 'guestVolume',
-							options: {
-								target: guestTarget,
-								value: expr(`max(0, ${guestNumber('volume')} - 5)`),
-							},
+							options: { target: guestTarget, value: expr(`max(0, ${guestNumber('volume')} - 5)`) },
 						},
 					],
-					rotate_right: [
+					[
 						{
 							actionId: 'guestVolume',
-							options: {
-								target: guestTarget,
-								value: expr(`min(200, ${guestNumber('volume')} + 5)`),
-							},
+							options: { target: guestTarget, value: expr(`min(200, ${guestNumber('volume')} + 5)`) },
 						},
 					],
-				}),
+				),
 			}),
 			'Volume',
 		),
-		perSlot(
+		perGuest(
 			guestToggle('guest_speaker', 'Guest Speaker', 'DEAF', 'guestSpeaker', 'guestDeafened', 'deafened'),
 			'Deafen',
 		),
-		perSlot(guestToggle('guest_display', 'Guest Blind', 'BLIND', 'guestDisplay', 'guestBlind', 'blind'), 'Blind'),
+		perGuest(guestToggle('guest_display', 'Guest Blind', 'BLIND', 'guestDisplay', 'guestBlind', 'blind'), 'Blind'),
 	]
 
-	const guestHighlight = perSlot(
+	const guestHighlight = perGuest(
 		addStatus({
 			id: 'guest_highlight',
 			name: 'Guest Highlight',
@@ -366,7 +373,7 @@ export function GetPresets(): {
 		status: string,
 		actionId: 'guestSoloChat' | 'guestAltSoloChat',
 	) =>
-		perSlot(
+		perGuest(
 			addStatus({
 				id,
 				name,
@@ -384,7 +391,7 @@ export function GetPresets(): {
 		)
 
 	const guestState = [
-		perSlot(
+		perGuest(
 			addStatus({
 				id: 'guest_hand',
 				name: 'Guest Hand',
@@ -399,7 +406,7 @@ export function GetPresets(): {
 			}),
 			'Hand raised',
 		),
-		perSlot(
+		perGuest(
 			addStatus({
 				id: 'guest_queued',
 				name: 'Guest Queued',
@@ -415,19 +422,21 @@ export function GetPresets(): {
 			}),
 			'In queue',
 		),
-		perSlot(
+		perGuest(
 			addStatus({
 				id: 'guest_mixer_slot',
 				name: 'Guest Mixer Slot',
 				notes:
-					'Shows the mixer slot the guest is assigned to, highlighting when it is the `mixer_slot` local variable. Needs slots in use (&slotmode on the director, or the mixer).',
+					'Shows the mixer slot the guest is assigned to, highlighting when it is the `mixer_slot` local variable. Press to assign the guest to that slot. Needs slots in use (&slotmode on the director, or the mixer).',
 				title: 'SLOT',
 				...guestLabel,
-				localVariables: [slotVariable, { variableType: 'simple', variableName: 'mixer_slot', startupValue: 1 }],
+				localVariables: [guestVariable, { variableType: 'simple', variableName: 'mixer_slot', startupValue: 1 }],
 				status: orDash(guestExpr('slot')),
 				statusText: guestVar('slot'),
 				accent: Colors.idle,
-				steps: press([]),
+				steps: press([
+					{ actionId: 'guestSetSlot', options: { target: guestTarget, value: expr('$(local:mixer_slot)') } },
+				]),
 				states: [
 					{
 						when: { feedbackId: 'guestSlot', options: { stream: guestStream, slot: expr('$(local:mixer_slot)') } },
@@ -439,7 +448,7 @@ export function GetPresets(): {
 		),
 	]
 
-	const changeSlotNote = 'Set the `slot` local variable on the button to choose the guest.'
+	const changeSlotNote = 'Set the `guest` local variable on the button to choose the guest.'
 	const guestScenes = [
 		templated(
 			'guest_scene',
@@ -451,7 +460,7 @@ export function GetPresets(): {
 				keywords: ['add', 'program'],
 				title: 'SCENE',
 				...guestLabel,
-				localVariables: [slotVariable, { variableType: 'simple', variableName: 'scene', startupValue: 1 }],
+				localVariables: [guestVariable, { variableType: 'simple', variableName: 'scene', startupValue: 1 }],
 				status: '`Scene ${$(local:scene)}`',
 				statusText: 'Scene $(local:scene)',
 				accent: Colors.idle,
@@ -466,7 +475,7 @@ export function GetPresets(): {
 			'scene',
 			numbered(SceneCount, 'Scene'),
 		),
-		perSlot(
+		perGuest(
 			guestToggle(
 				'guest_scene_mic',
 				'Guest Mic in Scenes',
@@ -486,7 +495,7 @@ export function GetPresets(): {
 				notes: changeSlotNote,
 				title: 'GROUP',
 				...guestLabel,
-				localVariables: [slotVariable, { variableType: 'simple', variableName: 'group', startupValue: 1 }],
+				localVariables: [guestVariable, { variableType: 'simple', variableName: 'group', startupValue: 1 }],
 				status: '`Group ${$(local:group)}`',
 				statusText: 'Group $(local:group)',
 				accent: Colors.idle,
@@ -503,70 +512,202 @@ export function GetPresets(): {
 		),
 	]
 
-	const guestManage = [
-		perSlot(
+	/** A guest command whose result VDO.Ninja doesn't report, so the tile shows only what it does */
+	const guestAction = (
+		id: string,
+		name: string,
+		title: string,
+		status: string,
+		steps: Step[],
+		extra: Partial<StatusTile>,
+	) =>
+		perGuest(
 			addStatus({
-				id: 'guest_keyframe',
-				name: 'Guest Force Keyframe',
-				notes: "Helps clear up a guest's corrupted video.",
-				keywords: ['rainbow', 'glitch'],
-				title: 'KEYFRAME',
+				id,
+				name,
+				title,
 				...guestLabel,
-				status: quoted('Refresh'),
-				statusText: 'Refresh',
-				accent: Colors.idle,
-				steps: press([{ actionId: 'guestForceKeyframe', options: { target: guestTarget } }]),
+				status: quoted(status),
+				statusText: status,
+				accent: extra.accent ?? Colors.idle,
+				steps,
 				states: [],
+				...extra,
 			}),
-			'Keyframe',
+			name,
+		)
+	const configure = (notes: string): Partial<StatusTile> => ({ notes, accent: Colors.configure })
+
+	const guestManage = [
+		guestAction(
+			'guest_keyframe',
+			'Guest Force Keyframe',
+			'KEYFRAME',
+			'Refresh',
+			press([{ actionId: 'guestForceKeyframe', options: { target: guestTarget } }]),
+			{ notes: "Helps clear up a guest's corrupted video.", keywords: ['rainbow', 'glitch'] },
 		),
-		perSlot(
-			addStatus({
-				id: 'guest_hangup',
-				name: 'Guest Hang Up',
+		...(
+			[
+				['refreshVideo', 'Video', 'Restarts the video of a guest whose picture has frozen.'],
+				['refreshConnection', 'Connection', "Restarts a guest's connection without them reloading."],
+				['recoverStream', 'Everything', "Restarts a guest's video and connection together."],
+			] as const
+		).map(([value, status, notes]) =>
+			guestAction(
+				`guest_${value}`,
+				`Guest Refresh ${status}`,
+				'REFRESH',
+				status,
+				press([{ actionId: 'guestRefresh', options: { target: guestTarget, value } }]),
+				{ notes, keywords: ['frozen', 'recover', 'restart'] },
+			),
+		),
+		guestAction(
+			'guest_hangup',
+			'Guest Hang Up',
+			'HANG UP',
+			'Hold',
+			hold([{ actionId: 'guestHangup', options: { target: guestTarget } }]),
+			{
 				notes: 'Hold for a second to hang up the guest.',
 				keywords: ['kick', 'remove', 'disconnect'],
-				title: 'HANG UP',
-				...guestLabel,
-				status: quoted('Hold'),
-				statusText: 'Hold',
 				accent: Colors.stop,
-				steps: hold([{ actionId: 'guestHangup', options: { target: guestTarget } }]),
-				states: [],
-			}),
-			'Hang up',
+			},
 		),
-		perSlot(
-			addStatus({
-				id: 'guest_overlay',
-				name: 'Guest Overlay Message',
-				notes: 'Edit the action to set the message.',
+		guestAction(
+			'guest_overlay',
+			'Guest Overlay Message',
+			'MESSAGE',
+			'Configure',
+			press([{ actionId: 'guestOverlay', options: { target: guestTarget, value: '' } }]),
+			{ ...configure('Edit the action to set the message.'), keywords: ['chat', 'text', 'director'] },
+		),
+		guestAction(
+			'guest_pinned_overlay',
+			'Guest Pinned Message',
+			'PINNED',
+			'Configure',
+			press([{ actionId: 'guestPinnedOverlay', options: { target: guestTarget, value: '' } }]),
+			{
+				...configure('Edit the action to set the message. It stays on screen until the guest closes it.'),
 				keywords: ['chat', 'text', 'director'],
-				title: 'MESSAGE',
-				...guestLabel,
-				status: quoted('Configure'),
-				statusText: 'Configure',
-				accent: Colors.configure,
-				steps: press([{ actionId: 'guestOverlay', options: { target: guestTarget, value: '' } }]),
-				states: [],
-			}),
-			'Overlay message',
+			},
 		),
-		perSlot(
-			addStatus({
-				id: 'guest_forward',
-				name: 'Guest Transfer',
-				notes: 'Edit the action to set the destination room, then hold for a second to transfer the guest.',
+		guestAction(
+			'guest_forward',
+			'Guest Transfer',
+			'TRANSFER',
+			'Configure',
+			hold([{ actionId: 'guestForward', options: { target: guestTarget, value: '' } }]),
+			{
+				...configure('Edit the action to set the destination room, then hold for a second to transfer the guest.'),
 				keywords: ['forward', 'move', 'room'],
-				title: 'TRANSFER',
-				...guestLabel,
-				status: quoted('Configure'),
-				statusText: 'Configure',
-				accent: Colors.configure,
-				steps: hold([{ actionId: 'guestForward', options: { target: guestTarget, value: '' } }]),
-				states: [],
-			}),
-			'Transfer',
+			},
+		),
+		...(['start', 'pause', 'stop'] as const).map((value) =>
+			guestAction(
+				`guest_timer_${value}`,
+				`Guest Timer ${{ start: 'Start', pause: 'Pause', stop: 'Stop' }[value]}`,
+				'TIMER',
+				{ start: '10 min', pause: 'Pause', stop: 'Stop' }[value],
+				press([{ actionId: 'guestRoomTimer', options: { target: guestTarget, value, seconds: 600 } }]),
+				{ keywords: ['countdown', 'clock'] },
+			),
+		),
+	]
+
+	const guestMix = [
+		...(
+			[
+				[-1, 'earlier', 'Earlier'],
+				[1, 'later', 'Later'],
+			] as const
+		).map(([value, id, status]) =>
+			guestAction(
+				`guest_mix_${id}`,
+				`Guest Mix ${status}`,
+				'MIX ORDER',
+				status,
+				press([{ actionId: 'guestMixOrder', options: { target: guestTarget, value } }]),
+				{ notes: 'Moves the guest in the order of the automatic mixer.', keywords: ['order', 'layout'] },
+			),
+		),
+		guestAction(
+			'guest_channel',
+			'Guest Audio Channel',
+			'CHANNEL',
+			'Channel 1',
+			press([{ actionId: 'guestChannel', options: { target: guestTarget, value: 1 } }]),
+			{ notes: "Toggles hearing only the first channel of the guest's audio.", keywords: ['isolate', 'audio'] },
+		),
+	]
+
+	const guestVideo = [
+		guestAction(
+			'guest_mirror',
+			'Guest Mirror',
+			'MIRROR',
+			'Toggle',
+			press([{ actionId: 'guestMirror', options: { target: guestTarget, value: 'toggle' } }]),
+			{ keywords: ['flip'] },
+		),
+		guestAction(
+			'guest_rotate',
+			'Guest Rotate',
+			'ROTATE',
+			'+90°',
+			press([{ actionId: 'guestRotate', options: { target: guestTarget, value: 'true' } }]),
+			{ keywords: ['portrait'] },
+		),
+		guestAction(
+			'guest_request_resolution',
+			'Guest Preview Resolution',
+			'RESOLUTION',
+			'720p',
+			press([{ actionId: 'guestRequestResolution', options: { target: guestTarget, value: '1280x720' } }]),
+			{ notes: 'Asks the guest to send 1280x720 to this page. Edit the action for another resolution.' },
+		),
+		guestAction(
+			'guest_request_aspect',
+			'Guest Preview Aspect Ratio',
+			'ASPECT',
+			'16:9',
+			press([{ actionId: 'guestRequestAspectRatio', options: { target: guestTarget, value: '16:9', size: 1920 } }]),
+			{ notes: 'Asks the guest to send 16:9 video to this page. Edit the action for another ratio.' },
+		),
+		guestAction(
+			'guest_capture_size',
+			'Guest Camera Size',
+			'CAPTURE',
+			'Configure',
+			press([{ actionId: 'guestCaptureSize', options: { target: guestTarget, setting: 'setWidth', value: '1280' } }]),
+			configure("Edit the action to set the width, height or aspect ratio the guest's camera captures at."),
+		),
+		...(Object.entries(ptzDirections) as [Ptz, (typeof ptzDirections)[Ptz]][]).map(([axis, [title]]) =>
+			guestAction(
+				`guest_${axis}_dial`,
+				`Guest ${title} Dial`,
+				title.toUpperCase(),
+				'Turn',
+				dial(
+					[],
+					[{ actionId: 'guestPtz', options: { target: guestTarget, axis, value: -5 } }],
+					[{ actionId: 'guestPtz', options: { target: guestTarget, axis, value: 5 } }],
+				),
+				{
+					notes: "For a rotary encoder. Needs &ptz on the guest's VDO.Ninja page, and a camera that supports it.",
+					keywords: ['camera', 'ptz', 'rotary', 'encoder'],
+				},
+			),
+		),
+		guestAction(
+			'guest_autofocus',
+			'Guest Autofocus',
+			'AUTOFOCUS',
+			'On',
+			press([{ actionId: 'guestAutofocus', options: { target: guestTarget, value: 'true' } }]),
+			{ notes: "Turns the guest camera's autofocus back on.", keywords: ['camera', 'ptz', 'focus'] },
 		),
 	]
 
@@ -610,7 +751,7 @@ export function GetPresets(): {
 		title: string,
 		status: string,
 		steps: Step[],
-		extra: Partial<StatusTile> = {},
+		extra: Partial<StatusTile>,
 	) =>
 		addStatus({
 			id,
@@ -641,18 +782,19 @@ export function GetPresets(): {
 				{ name: 'Stop', down: [{ actionId: 'record', options: { value: 'false' } }], up: [] },
 			],
 			{
-				notes: 'Starts and stops recording to disk. Pressing it again moves between the two.',
-				status: `$(this:step) == 2 ? 'Recording' : 'Stopped'`,
-				statusText: 'Record',
+				notes:
+					'Starts and stops recording to disk, one then the other. VDO.Ninja does not report whether it is recording, so this shows what the next press does.',
+				status: `$(this:step) == 2 ? 'Press to stop' : 'Press to start'`,
+				statusText: 'Start / Stop',
 				states: [
 					{
-						when: { feedbackId: 'internal:buttonCurrentStep', options: { step: 2 } } as unknown as FeedbackOn,
+						when: { feedbackId: 'internal:buttonCurrentStep', options: { step: 2 } },
 						accent: Colors.stop,
 					},
 				],
 			},
 		),
-		actionTile('local_hand', 'Raise Hand', 'HAND', 'Toggle', press([{ actionId: 'togglehand', options: {} }])),
+		actionTile('local_hand', 'Raise Hand', 'HAND', 'Toggle', press([{ actionId: 'togglehand', options: {} }]), {}),
 		actionTile(
 			'local_screenshare',
 			'Screen Share',
@@ -669,6 +811,7 @@ export function GetPresets(): {
 			'KEYFRAME',
 			'Refresh',
 			press([{ actionId: 'forceKeyframe', options: {} }]),
+			{},
 		),
 		actionTile('local_reload', 'Reload', 'RELOAD', 'Hold', hold([{ actionId: 'reload', options: {} }]), {
 			notes: 'Hold for a second to reload the page.',
@@ -721,10 +864,11 @@ export function GetPresets(): {
 			valueText: '$(local:volume)',
 			max: 100,
 			accent: Colors.live,
-			steps: press(localSetVolume('100'), {
-				rotate_left: localSetVolume('max(0, $(local:volume) - 5)'),
-				rotate_right: localSetVolume('min(100, $(local:volume) + 5)'),
-			}),
+			steps: dial(
+				localSetVolume('100'),
+				localSetVolume('max(0, $(local:volume) - 5)'),
+				localSetVolume('min(100, $(local:volume) + 5)'),
+			),
 		}),
 	]
 
@@ -748,6 +892,7 @@ export function GetPresets(): {
 			'BITRATE',
 			'Reset',
 			press([{ actionId: 'bitrate', options: { value: 'true', bitrate: 1500 } }]),
+			{},
 		),
 		actionTile(
 			'bitrate_pause',
@@ -785,7 +930,6 @@ export function GetPresets(): {
 		},
 	)
 
-	type Ptz = 'ptzPan' | 'ptzTilt' | 'ptzZoom' | 'ptzFocus'
 	const ptzTile = (actionId: Ptz, title: string) => {
 		const stepPreset = actionTile(
 			`${actionId}_step`,
@@ -821,13 +965,6 @@ export function GetPresets(): {
 		)
 		return { stepPreset, dialPreset }
 	}
-
-	const ptzDirections = {
-		ptzPan: ['Pan', 'Left', 'Right'],
-		ptzTilt: ['Tilt', 'Up', 'Down'],
-		ptzZoom: ['Zoom', 'In', 'Out'],
-		ptzFocus: ['Focus', 'Near', 'Far'],
-	} as const
 
 	const ptz = (Object.keys(ptzDirections) as Ptz[]).flatMap((actionId) => {
 		const [title, minus, plus] = ptzDirections[actionId]
@@ -905,12 +1042,99 @@ export function GetPresets(): {
 		states: [{ when: { feedbackId: 'highlighted', options: { stream: localStream } }, accent: Colors.info }],
 	})
 
+	const localOverlay = actionTile(
+		'local_overlay',
+		'Overlay Message',
+		'OVERLAY',
+		'Configure',
+		press([{ actionId: 'showChatOverlay', options: { value: '' } }]),
+		{ ...configure('Edit the action to set the message. It shows on this page only.'), keywords: ['text'] },
+	)
+	const activeSpeaker = actionTile(
+		'local_active_speaker',
+		'Active Speaker',
+		'SPEAKER VIEW',
+		'Toggle',
+		press([{ actionId: 'activeSpeaker', options: { value: 'toggle' } }]),
+		{ notes: 'Toggles the layout that follows whoever is speaking.', keywords: ['layout', 'voice'] },
+	)
+	const tallyStep = actionTile(
+		'local_tally',
+		'Tally Light',
+		'TALLY',
+		'',
+		press([{ actionId: 'tallyLight', options: { value: expr('$(local:tally)') } }]),
+		{
+			keywords: ['on air', 'standby'],
+			localVariables: [{ variableType: 'simple', variableName: 'tally', startupValue: 'onair' }],
+			status: '$(local:tally)',
+			statusText: '$(local:tally)',
+		},
+	)
+	const cameraSetting = actionTile(
+		'local_camera_setting',
+		'Camera Setting',
+		'CAMERA',
+		'Configure',
+		press([{ actionId: 'videoConstraint', options: { name: '', value: '' } }]),
+		configure('Edit the action to choose the camera setting, such as brightness, and its value.'),
+	)
+	const aspectStep = actionTile(
+		'local_aspect',
+		'Camera Aspect Ratio',
+		'ASPECT',
+		'',
+		press([{ actionId: 'aspectRatio', options: { value: '$(local:ratio)' } }]),
+		{
+			localVariables: [{ variableType: 'simple', variableName: 'ratio', startupValue: '16:9' }],
+			status: '$(local:ratio)',
+			statusText: '$(local:ratio)',
+		},
+	)
+	const bufferStep = actionTile(
+		'local_buffer',
+		'Buffer Delay',
+		'BUFFER',
+		'',
+		press([{ actionId: 'bufferDelay', options: { value: expr('$(local:delay)'), stream: '*' } }]),
+		{
+			notes: 'Delays every incoming stream, to keep it in sync with other sources.',
+			keywords: ['sync', 'latency'],
+			localVariables: [{ variableType: 'simple', variableName: 'delay', startupValue: 0 }],
+			status: '`${$(local:delay)} ms`',
+			statusText: '$(local:delay) ms',
+		},
+	)
+	const layoutStep = actionTile(
+		'director_layout',
+		'Mixer Layout',
+		'LAYOUT',
+		'',
+		press([{ actionId: 'layout', options: { value: expr('$(local:layout)') } }]),
+		{
+			notes: 'Layout 1 and up are the layouts given with &layouts.',
+			localVariables: [{ variableType: 'simple', variableName: 'layout', startupValue: 0 }],
+			status: "$(local:layout) == 0 ? 'Auto' : `Layout ${$(local:layout)}`",
+			statusText: 'Layout $(local:layout)',
+		},
+	)
+	const roomTimer = (['start', 'pause', 'stop'] as const).map((value) =>
+		actionTile(
+			`room_timer_${value}`,
+			`Room Timer ${{ start: 'Start', pause: 'Pause', stop: 'Stop' }[value]}`,
+			'TIMER',
+			{ start: '10 min', pause: 'Pause', stop: 'Stop' }[value],
+			press([{ actionId: 'roomTimer', options: { value, seconds: 600 } }]),
+			{ keywords: ['countdown', 'clock'] },
+		),
+	)
+
 	const structure: CompanionPresetSection<ModuleSchema>[] = [
 		{
 			id: 'guests',
 			name: 'Guests',
 			description:
-				"For a director. Each button follows a guest slot, whoever is in it. Drag one on, then change the button's `slot` local variable to use it for another guest.",
+				"For a director. Each button follows a guest position, whoever is in it. Drag one on, then change the button's `guest` local variable to use it for another guest.",
 			definitions: [
 				...guestAudioVideo,
 				guestHighlight,
@@ -919,7 +1143,13 @@ export function GetPresets(): {
 			],
 		},
 		{ id: 'guest_state', name: 'Guest State', definitions: guestState },
-		{ id: 'guest_scenes', name: 'Guest Scenes and Groups', definitions: guestScenes },
+		{ id: 'guest_scenes', name: 'Guest Scenes, Groups and Mix', definitions: [...guestScenes, ...guestMix] },
+		{
+			id: 'guest_video',
+			name: 'Guest Video and Camera',
+			description: "Camera moves need &ptz on the guest's VDO.Ninja page, and a camera that supports them.",
+			definitions: guestVideo,
+		},
 		{ id: 'guest_manage', name: 'Guest Management', definitions: guestManage },
 		{
 			id: 'local',
@@ -929,6 +1159,13 @@ export function GetPresets(): {
 				{ id: 'local_mutes', type: 'simple', name: 'Mic, camera and speaker', presets: localMutes },
 				{ id: 'local_actions', type: 'simple', name: 'Page', presets: localPage },
 				{ id: 'local_slides', type: 'simple', name: 'Slides', presets: slides },
+				{ id: 'local_screen', type: 'simple', name: 'Overlay and layout', presets: [localOverlay, activeSpeaker] },
+				templated('local_tally_group', 'Tally light', tallyStep, 'tally', [
+					{ name: 'On air', value: 'onair' },
+					{ name: 'Active', value: 'active' },
+					{ name: 'Standby', value: 'standby' },
+					{ name: 'Off', value: 'off' },
+				]),
 			],
 		},
 		{
@@ -943,13 +1180,32 @@ export function GetPresets(): {
 					{ name: 'Right', value: 180 },
 				]),
 				{ id: 'playback_bitrate', type: 'simple', name: 'Bitrate', presets: bitrate },
+				templated(
+					'playback_buffer',
+					'Buffer delay',
+					bufferStep,
+					'delay',
+					[0, 250, 500, 1000].map((value) => ({ name: `${value} ms`, value })),
+				),
 			],
 		},
 		{
 			id: 'camera',
 			name: 'Camera',
-			description: "These need &ptz on the camera's VDO.Ninja page, and a camera that supports them.",
-			definitions: [...ptz, templated('camera_exposure', 'Exposure', exposureStep, 'exposure', percents)],
+			description:
+				"Pan, tilt, zoom, focus and exposure need &ptz on the camera's VDO.Ninja page, and a camera that supports them.",
+			definitions: [
+				...ptz,
+				templated('camera_exposure', 'Exposure', exposureStep, 'exposure', percents),
+				templated(
+					'camera_aspect',
+					'Aspect ratio',
+					aspectStep,
+					'ratio',
+					['16:9', '4:3', '9:16', '1:1'].map((value) => ({ name: value, value })),
+				),
+				{ id: 'camera_setting_group', type: 'simple', name: 'Camera setting', presets: [cameraSetting] },
+			],
 		},
 		{
 			id: 'director',
@@ -962,6 +1218,11 @@ export function GetPresets(): {
 				directorGroup('director_join_view', 'Start viewing group', 'VIEW +', 'joinViewGroup', false),
 				directorGroup('director_leave_view', 'Stop viewing group', 'VIEW -', 'leaveViewGroup', false),
 				{ id: 'director_self', type: 'simple', name: 'Highlight', presets: [directorHighlight] },
+				templated('director_layout_group', 'Mixer layout', layoutStep, 'layout', [
+					{ name: 'Auto mixer', value: 0 },
+					...numbered(4, 'Layout'),
+				]),
+				{ id: 'director_timer', type: 'simple', name: 'Room timer', presets: roomTimer },
 			],
 		},
 	]

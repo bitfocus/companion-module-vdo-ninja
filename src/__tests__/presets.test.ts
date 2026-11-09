@@ -53,7 +53,7 @@ describe('presets', () => {
 		expect(feedbacks.filter((id) => !used.has(id))).toEqual([])
 	})
 
-	it('exist before anything has connected, as they follow slots rather than streams', () => {
+	it('exist before anything has connected, as they follow guest positions rather than streams', () => {
 		expect(presetIds.length).toBeGreaterThan(30)
 		expect(JSON.stringify(presets)).not.toContain(guest.streamID)
 	})
@@ -91,9 +91,9 @@ describe('presets', () => {
 		}
 	})
 
-	it('offers a button for every slot up to twelve guests', () => {
+	it('offers a button for each of the first twelve guests', () => {
 		const mic = groups.find((group) => group.id === 'guest_mic')
-		expect(mic).toMatchObject({ type: 'template', templateVariableName: 'slot' })
+		expect(mic).toMatchObject({ type: 'template', templateVariableName: 'guest' })
 		expect(mic?.type === 'template' && mic.templateValues.map((v) => v.value)).toEqual([
 			1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
 		])
@@ -101,10 +101,10 @@ describe('presets', () => {
 
 	it('only reads variables the module defines', () => {
 		const defined = Object.keys(GetVariableDefinitions(statesOf(director, guest, local)))
-		const known = new Set(defined.map((id) => id.replace(/^guest_2_/, 'guest_$(local:slot)_')))
+		const known = new Set(defined.map((id) => id.replace(/^guest_2_/, 'guest_$(local:guest)_')))
 		for (const [, variants] of everything) {
 			const text = JSON.stringify(variants)
-			for (const match of text.matchAll(/\$\(VDO\.Ninja:((?:[^()]|\$\(local:slot\))+)\)/g)) {
+			for (const match of text.matchAll(/\$\(VDO\.Ninja:((?:[^()]|\$\(local:guest\))+)\)/g)) {
 				expect(known).toContain(match[1])
 			}
 		}
@@ -153,19 +153,31 @@ describe('presets', () => {
 		}
 	})
 
-	it('addresses the guest in a slot, not a fixed stream', () => {
+	it('addresses the guest in a position, not a fixed stream', () => {
 		expect(variantsOf('guest_mic').layered).toMatchObject({
-			steps: [{ down: [{ actionId: 'guestMic', options: { target: '$(local:slot)' } }] }],
+			steps: [{ down: [{ actionId: 'guestMic', options: { target: '$(local:guest)' } }] }],
 			feedbacks: [
 				{
 					feedbackId: 'mic',
 					options: {
-						stream: { isExpression: true, value: "parseVariables('$(VDO.Ninja:guest_$(local:slot)_streamID)', '')" },
+						stream: { isExpression: true, value: "parseVariables('$(VDO.Ninja:guest_$(local:guest)_streamID)', '')" },
 					},
 				},
 				{ feedbackId: 'mic' },
 			],
 		})
+	})
+
+	it('says what the record button will do next, as VDO.Ninja does not report whether it is recording', () => {
+		const { layered } = variantsOf('local_record')
+		expect(JSON.stringify(layered.elements)).toContain('Press to stop')
+		expect(JSON.stringify(layered.elements)).not.toContain('Recording')
+	})
+
+	it('assigns the guest to the mixer slot it shows', () => {
+		expect(variantsOf('guest_mixer_slot').layered.steps).toMatchObject([
+			{ down: [{ actionId: 'guestSetSlot', options: { target: '$(local:guest)' } }] },
+		])
 	})
 
 	it('sets the volume ring from the rotary, stopping at the ends of the range', () => {

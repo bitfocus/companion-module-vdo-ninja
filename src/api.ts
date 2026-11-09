@@ -67,7 +67,6 @@ export interface LocalCommands {
 	prevSlide: NoValue
 	/** A missing value toggles */
 	soloVideo: { value?: Toggle }
-	muteAllGuests: Value<Toggle>
 	startRoomTimer: Value<NumberLike>
 	stopRoomTimer: NoValue
 	pauseRoomTimer: NoValue
@@ -93,10 +92,7 @@ export interface GuestCommands {
 	forward: Value<string>
 	/** Toggles, unless value2 forces membership */
 	addScene: { value: SceneId; value2?: BoolLike }
-	setScene: { value: SceneId; value2?: BoolLike }
 	muteScene: Value<SceneId>
-	activateQueuedGuest: NoValue
-	removeQueuedGuest: NoValue
 	/** Destination slot, or 0 to unset */
 	setslot: Value<NumberLike>
 	group: Value<NumberLike>

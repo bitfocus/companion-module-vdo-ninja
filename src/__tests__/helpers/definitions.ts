@@ -17,7 +17,9 @@ export async function runAction<K extends keyof ActionsSchema>(
 	id: K,
 	options: ActionsSchema[K]['options'],
 ): Promise<void> {
-	const callback = definition(GetActions(sender)[id] as Definition | undefined, id).callback as Callback
+	// Indexing the full definitions map by a generic key is too complex a union for TypeScript
+	const actions: Record<string, Definition | false | undefined> = GetActions(sender)
+	const callback = definition(actions[id], id).callback as Callback
 	await callback({ id: 'test', actionId: id, controlId: 'bank', options }, {})
 }
 

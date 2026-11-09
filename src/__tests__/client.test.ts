@@ -387,6 +387,30 @@ describe('VdoNinjaClient connection', () => {
 			client.destroy()
 		})
 
+		it.each([2, '2', 'guestStream'])(
+			'reports a guest volume as soon as it is sent to guest %j, so a dial can step from it',
+			async (target) => {
+				const client = await connected()
+				const stateChanged = vi.fn()
+				client.on('stateChanged', stateChanged)
+
+				client.sendGuest('volume', target, { value: 105 })
+				client.sendGuest('volume', target, { value: 110 })
+
+				expect(client.states.guestStream.others?.volume).toBe('110')
+				expect(stateChanged).toHaveBeenCalledTimes(2)
+				client.destroy()
+			},
+		)
+
+		it('leaves the volume alone when no guest matches the target', async () => {
+			const client = await connected()
+			client.sendGuest('volume', 7, { value: 50 })
+
+			expect(client.states.guestStream.others?.volume).toBeUndefined()
+			client.destroy()
+		})
+
 		it('gathers getDetails requests made close together into one', async () => {
 			const client = await connected()
 			for (let i = 0; i < 5; i++) client.requestDetails()
