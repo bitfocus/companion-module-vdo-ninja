@@ -42,6 +42,7 @@ export type ActionsSchema = {
 	guestMuteScene: GuestValueOptions<string>
 	guestGroup: GuestValueOptions<string>
 	guestMic: GuestOption
+	guestCamera: GuestOption
 	guestHangup: GuestOption
 	guestSoloChat: GuestOption
 	guestAltSoloChat: GuestOption
@@ -621,6 +622,25 @@ export function GetActions(
 			],
 			callback: (action) => {
 				client.sendGuest('mic', action.options.target, {})
+			},
+		},
+
+		guestCamera: {
+			name: 'Director: Guest Camera',
+			description: 'Toggle the camera of a specific guest',
+			options: [
+				{
+					type: 'textinput',
+					label: 'Guest',
+					description: 'Position number or stream ID',
+					id: 'target',
+					minLength: 1,
+					default: '1',
+					useVariables: true,
+				},
+			],
+			callback: (action) => {
+				client.sendGuest('camera', action.options.target, {})
 			},
 		},
 

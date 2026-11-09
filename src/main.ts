@@ -4,6 +4,7 @@ import type { GuestCommands, GuestTarget, LocalCommands } from './api.js'
 import { VdoNinjaClient, type ClientStatus } from './client.js'
 import { GetConfigFields, GetServerUrl, type ModuleConfig, type ModuleSecrets } from './config.js'
 import { GetFeedbacks, type FeedbacksSchema } from './feedbacks.js'
+import { GetCompositeElements, type CompositeElementsSchema } from './graphics.js'
 import { GetPresets } from './presets.js'
 import { UpgradeScripts } from './upgrades.js'
 import { ChangedVariableValues, GetVariableDefinitions, GetVariableValues, type VariablesSchema } from './variables.js'
@@ -14,6 +15,7 @@ export type ModuleSchema = {
 	actions: ActionsSchema
 	feedbacks: FeedbacksSchema
 	variables: VariablesSchema
+	compositeElements: CompositeElementsSchema
 }
 
 export { UpgradeScripts }
@@ -40,7 +42,11 @@ export default class VDONinjaInstance extends InstanceBase<ModuleSchema> {
 		this.config = config
 		this.secrets = secrets
 		this.setActionDefinitions(GetActions(this))
+		this.setCompositeElementDefinitions(GetCompositeElements())
 		this.connect()
+		// Presets follow guest slots through variables, so unlike the rest they don't change with the streams
+		const { structure, presets } = GetPresets()
+		this.setPresetDefinitions(structure, presets)
 	}
 
 	async destroy(): Promise<void> {
@@ -107,8 +113,6 @@ export default class VDONinjaInstance extends InstanceBase<ModuleSchema> {
 		const source = this.client ?? { states: {}, streams: [] }
 		this.setFeedbackDefinitions(GetFeedbacks(source))
 		this.setVariableDefinitions(GetVariableDefinitions(source.states))
-		const { structure, presets } = GetPresets(source.states)
-		this.setPresetDefinitions(structure, presets)
 		// The definitions were replaced, so send every value again
 		this.#sentValues = {}
 		this.updateVariableValues()

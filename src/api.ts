@@ -101,6 +101,7 @@ export interface GuestCommands {
 	setslot: Value<NumberLike>
 	group: Value<NumberLike>
 	mic: NoValue
+	camera: NoValue
 	hangup: NoValue
 	soloChat: NoValue
 	soloChatBidirectional: NoValue

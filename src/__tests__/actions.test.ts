@@ -56,6 +56,7 @@ describe('actions', () => {
 		['guestMuteScene', { target: '2', value: '3' }, 'muteScene', { value: '3' }],
 		['guestGroup', { target: '2', value: '4' }, 'group', { value: '4' }],
 		['guestMic', { target: '2' }, 'mic', {}],
+		['guestCamera', { target: '2' }, 'camera', {}],
 		['guestHangup', { target: '2' }, 'hangup', {}],
 		['guestSoloChat', { target: '2' }, 'soloChat', {}],
 		['guestAltSoloChat', { target: '2' }, 'soloChatBidirectional', {}],
@@ -74,6 +75,6 @@ describe('actions', () => {
 
 	it('covers every action', () => {
 		const { actions } = setup()
-		expect(Object.keys(actions)).toHaveLength(41)
+		expect(Object.keys(actions)).toHaveLength(42)
 	})
 })

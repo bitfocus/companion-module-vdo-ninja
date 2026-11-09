@@ -1,6 +1,6 @@
 import type { CompanionVariableDefinitions, CompanionVariableValue } from '@companion-module/base'
 import { isDeepStrictEqual } from 'node:util'
-import { isHandRaised, isHighlighted, isQueued, slotOf } from './state.js'
+import { isControlOn, isHandRaised, isHighlighted, isQueued, slotOf, volumeOf } from './state.js'
 import type { StreamState } from './types.js'
 
 /** Director-view state of a guest, defined under both its slot and its stream ID */
@@ -10,6 +10,10 @@ const GuestStateVariables = {
 	highlighted: 'Highlighted',
 	slot: 'Slot',
 	groups: 'Groups',
+	volume: 'Volume',
+	deafened: 'Deafened',
+	blind: 'Blind',
+	scene_mic: 'Mic in Scenes',
 } as const
 
 function isGuest(data: StreamState): boolean {
@@ -23,6 +27,10 @@ function guestStateValues(data: StreamState): Record<keyof typeof GuestStateVari
 		highlighted: isHighlighted(data) ? 'Highlighted' : 'Not highlighted',
 		slot: slotOf(data) ?? 'None',
 		groups: data.group?.length ? data.group : 'None',
+		volume: volumeOf(data),
+		deafened: isControlOn(data, 'deafened') ? 'Deafened' : 'Off',
+		blind: isControlOn(data, 'blind') ? 'Blind' : 'Off',
+		scene_mic: isControlOn(data, 'sceneMuted') ? 'Muted' : 'Live',
 	}
 }
 
@@ -32,6 +40,14 @@ export function GetVariableDefinitions(
 	states: Record<string, StreamState>,
 ): CompanionVariableDefinitions<VariablesSchema> {
 	const variables: CompanionVariableDefinitions<VariablesSchema> = {}
+
+	if (Object.values(states).some((data) => data.localStream)) {
+		variables.local_streamID = { name: 'This page - StreamID' }
+		variables.local_mic = { name: 'This page - Mic' }
+		variables.local_camera = { name: 'This page - Camera' }
+		variables.local_speaker = { name: 'This page - Speaker' }
+		variables.local_highlighted = { name: 'This page - Highlighted' }
+	}
 
 	for (const data of Object.values(states)) {
 		const name = data.label ? `(${data.label})` : ''
@@ -81,6 +97,15 @@ export function GetVariableValues(states: Record<string, StreamState>): Variable
 		}
 
 		if (data.streamID) {
+			if (data.localStream) {
+				Object.assign(values, {
+					local_streamID: data.streamID,
+					local_mic: data.muted ? 'Muted' : 'Unmuted',
+					local_camera: data.videoMuted ? 'Muted' : 'Unmuted',
+					local_speaker: data.speakerMuted ? 'Muted' : 'Unmuted',
+					local_highlighted: isHighlighted(data) ? 'Highlighted' : 'Not highlighted',
+				})
+			}
 			if (data.director) {
 				label = 'Director'
 				Object.assign(values, {

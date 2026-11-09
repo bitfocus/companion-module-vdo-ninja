@@ -125,4 +125,24 @@ describe('feedbacks', () => {
 			expect(check('highlighted', { stream: 'guestone' })).toBe(false)
 		})
 	})
+
+	it.each([
+		['guestDeafened', 'toggle-remote-speaker'],
+		['guestBlind', 'toggle-remote-display'],
+		['guestSceneMuted', 'mute-scene'],
+	] as const)('%s follows the %s control', (id, control) => {
+		const check = (value: string | undefined) => {
+			const others = value === undefined ? {} : { [control]: value }
+			const states = statesOf({ ...guest, others })
+			return checkFeedback({ states, streams: [] }, id, { stream: guest.streamID })
+		}
+		expect(check('1')).toBe(true)
+		expect(check('0')).toBe(false)
+		expect(check(undefined)).toBe(false)
+	})
+
+	it('follows a stream given by a custom value, as the slot presets do', () => {
+		const stream = definition(GetFeedbacks({ states: {}, streams: [] }).camera, 'camera').options[0]
+		expect(stream).toMatchObject({ id: 'stream', allowCustom: true })
+	})
 })

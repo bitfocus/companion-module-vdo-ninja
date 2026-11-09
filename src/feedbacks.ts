@@ -5,7 +5,7 @@ import {
 	type CompanionInputFieldDropdown,
 } from '@companion-module/base'
 import type { VdoNinjaClient } from './client.js'
-import { isHandRaised, isHighlighted, isInGroup, isQueued, slotOf } from './state.js'
+import { isControlOn, isHandRaised, isHighlighted, isInGroup, isQueued, slotOf } from './state.js'
 
 type StreamStateOptions = {
 	stream: string
@@ -22,6 +22,9 @@ export type FeedbacksSchema = {
 	highlighted: { type: 'boolean'; options: { stream: string } }
 	guestGroup: { type: 'boolean'; options: { stream: string; group: number } }
 	guestSlot: { type: 'boolean'; options: { stream: string; slot: number } }
+	guestDeafened: { type: 'boolean'; options: { stream: string } }
+	guestBlind: { type: 'boolean'; options: { stream: string } }
+	guestSceneMuted: { type: 'boolean'; options: { stream: string } }
 }
 
 // Stored as a boolean, matching the true/false ids of the dropdown this replaced
@@ -38,21 +41,22 @@ export function GetFeedbacks(
 	const ColorWhite = combineRgb(255, 255, 255)
 	const ColorGreen = combineRgb(0, 200, 0)
 
-	const streamField = (allowCustom: boolean): CompanionInputFieldDropdown<'stream', string> => ({
+	// Custom values let a preset follow a guest slot with an expression, whoever is in it right now
+	const streamField: CompanionInputFieldDropdown<'stream', string> = {
 		type: 'dropdown',
 		label: 'Stream',
 		id: 'stream',
-		allowCustom,
+		allowCustom: true,
 		default: client.streams[0]?.id ?? '',
 		choices: client.streams,
-	})
+	}
 
 	return {
 		mic: {
 			type: 'boolean',
 			name: 'Mic Status',
 			description: 'If mic matches the selected state, change the style of the button',
-			options: [streamField(true), stateField],
+			options: [streamField, stateField],
 			defaultStyle: {
 				color: ColorWhite,
 				bgcolor: ColorGreen,
@@ -70,7 +74,7 @@ export function GetFeedbacks(
 			type: 'boolean',
 			name: 'Camera Status',
 			description: 'If camera matches the selected state, change the style of the button',
-			options: [streamField(false), stateField],
+			options: [streamField, stateField],
 			defaultStyle: {
 				color: ColorWhite,
 				bgcolor: ColorGreen,
@@ -88,7 +92,7 @@ export function GetFeedbacks(
 			type: 'boolean',
 			name: 'Speaker Status',
 			description: 'If speaker matches the selected state, change the style of the button',
-			options: [streamField(false), stateField],
+			options: [streamField, stateField],
 			defaultStyle: {
 				color: ColorWhite,
 				bgcolor: ColorGreen,
@@ -102,7 +106,7 @@ export function GetFeedbacks(
 			name: 'Guest in Scene',
 			description: 'If a stream is active the selected scene, change the style of the button',
 			options: [
-				streamField(true),
+				streamField,
 				{
 					type: 'textinput',
 					label: 'Scene name or ID (0 to 8)',
@@ -122,7 +126,7 @@ export function GetFeedbacks(
 			type: 'boolean',
 			name: 'Guest Hand Raised',
 			description: 'If the guest has raised their hand, change the style of the button',
-			options: [streamField(true)],
+			options: [streamField],
 			defaultStyle: {
 				color: ColorWhite,
 				bgcolor: ColorGreen,
@@ -136,7 +140,7 @@ export function GetFeedbacks(
 			type: 'boolean',
 			name: 'Guest Queued',
 			description: 'If the guest is waiting in the queue to be admitted, change the style of the button',
-			options: [streamField(true)],
+			options: [streamField],
 			defaultStyle: {
 				color: ColorWhite,
 				bgcolor: ColorGreen,
@@ -150,7 +154,7 @@ export function GetFeedbacks(
 			type: 'boolean',
 			name: 'Stream Highlighted',
 			description: 'If the stream is highlighted for everyone, change the style of the button',
-			options: [streamField(true)],
+			options: [streamField],
 			defaultStyle: {
 				color: ColorWhite,
 				bgcolor: ColorGreen,
@@ -165,7 +169,7 @@ export function GetFeedbacks(
 			name: 'Guest in Group',
 			description: 'If the guest is in the selected group, change the style of the button',
 			options: [
-				streamField(true),
+				streamField,
 				{
 					type: 'number',
 					label: 'Group ID (1 to 8)',
@@ -190,7 +194,7 @@ export function GetFeedbacks(
 			description:
 				'If the guest is assigned to the selected mixer slot, change the style of the button. Needs slots in use (&slotmode on the director, or the mixer)',
 			options: [
-				streamField(true),
+				streamField,
 				{
 					type: 'number',
 					label: 'Slot',
@@ -207,6 +211,48 @@ export function GetFeedbacks(
 			callback: (feedback) => {
 				const stream = client.states[feedback.options.stream]
 				return stream ? slotOf(stream) === feedback.options.slot : false
+			},
+		},
+		guestDeafened: {
+			type: 'boolean',
+			name: 'Guest Deafened',
+			description: 'If the director has deafened the guest, change the style of the button',
+			options: [streamField],
+			defaultStyle: {
+				color: ColorWhite,
+				bgcolor: ColorGreen,
+			},
+			callback: (feedback) => {
+				const stream = client.states[feedback.options.stream]
+				return stream ? isControlOn(stream, 'deafened') : false
+			},
+		},
+		guestBlind: {
+			type: 'boolean',
+			name: 'Guest Blind',
+			description: 'If the director has stopped the guest seeing video, change the style of the button',
+			options: [streamField],
+			defaultStyle: {
+				color: ColorWhite,
+				bgcolor: ColorGreen,
+			},
+			callback: (feedback) => {
+				const stream = client.states[feedback.options.stream]
+				return stream ? isControlOn(stream, 'blind') : false
+			},
+		},
+		guestSceneMuted: {
+			type: 'boolean',
+			name: 'Guest Mic Muted in Scenes',
+			description: "If the guest's mic is muted in scenes, change the style of the button",
+			options: [streamField],
+			defaultStyle: {
+				color: ColorWhite,
+				bgcolor: ColorGreen,
+			},
+			callback: (feedback) => {
+				const stream = client.states[feedback.options.stream]
+				return stream ? isControlOn(stream, 'sceneMuted') : false
 			},
 		},
 	}

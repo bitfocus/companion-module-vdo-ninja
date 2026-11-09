@@ -51,6 +51,7 @@ If the connection drops, the module reconnects on its own and shows **Disconnect
 The **Guest** field takes the guest's slot number (1, 2, …) or stream ID, and can use variables. It is required: a command with an empty guest is not sent, as VDO.Ninja would run it on the director's own page instead.
 
 - Guest Mic
+- Guest Camera
 - Guest Speaker
 - Set Guest Mic Volume
 - Overlay Message to Guest
@@ -76,6 +77,9 @@ The **Guest** field takes the guest's slot number (1, 2, …) or stream ID, and 
 - Stream Highlighted
 - Guest in Group
 - Guest in Slot (needs slots in use: `&slotmode=1` on the director, or the mixer)
+- Guest Deafened
+- Guest Blind
+- Guest Mic Muted in Scenes
 
 The status feedbacks are active when the stream's state matches the **Muted** checkbox. A guest muted or hidden by the director counts as muted.
 
@@ -95,5 +99,27 @@ For guests, as seen from the director:
 - highlighted (Highlighted or Not highlighted)
 - slot (Mixer slot number, or None)
 - groups (List of groups the guest is in)
+- volume (The volume the director has set, 0 to 200)
+- deafened (Deafened or Off)
+- blind (Blind or Off)
+- scene_mic (Muted or Live)
 
 Each variable is available by guest position (`guest_1_hand`) and by stream ID (`yourStreamID_hand`).
+
+For the page the API ID is attached to, whether it is a director or a guest:
+
+- local_streamID, local_mic, local_camera, local_speaker, local_highlighted
+
+### Presets
+
+There are presets for every action, available as soon as the module is added, before anything has connected.
+
+- **Guest buttons follow a slot, not a person.** Guest 1's button controls whoever is in slot 1, shows their name, and fades while the slot is empty. To point a button at another guest, change its `slot` local variable.
+- **Colours show real state.** The strip along the bottom turns green or red, for example, as the guest's mic changes. Solo Talk is the exception: VDO.Ninja doesn't report whether it is on, so those buttons can't show it.
+- **Hang up, reload and transfer need holding for a second**, so they can't be pressed by accident.
+- **Purple buttons need configuring** after you drag them on: a message to send, a room to transfer to, or a bitrate.
+- **Volume and camera dials** are for rotary encoders. Pressing a volume dial returns it to its default.
+
+These presets draw their graphics with the button elements in Companion 5, and include a simpler version for software that can't draw those. The **Status Tile** and **Level Tile** elements they use are also available to add to your own buttons.
+
+Buttons made from the module's earlier presets keep working and aren't changed.

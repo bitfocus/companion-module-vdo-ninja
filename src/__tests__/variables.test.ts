@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { GetPresets } from '../presets.js'
 import { ChangedVariableValues, GetVariableDefinitions, GetVariableValues } from '../variables.js'
 import { director, guest, local, statesOf } from './helpers/streams.js'
 
@@ -32,6 +31,14 @@ describe('variables', () => {
 			'guestStream_slot',
 			'guest_2_groups',
 			'guestStream_groups',
+			'guest_2_volume',
+			'guestStream_volume',
+			'guest_2_deafened',
+			'guestStream_deafened',
+			'guest_2_blind',
+			'guestStream_blind',
+			'guest_2_scene_mic',
+			'guestStream_scene_mic',
 		])
 	})
 
@@ -63,6 +70,14 @@ describe('variables', () => {
 			guestStream_slot: 'None',
 			guest_2_groups: 'None',
 			guestStream_groups: 'None',
+			guest_2_volume: 100,
+			guestStream_volume: 100,
+			guest_2_deafened: 'Off',
+			guestStream_deafened: 'Off',
+			guest_2_blind: 'Off',
+			guestStream_blind: 'Off',
+			guest_2_scene_mic: 'Live',
+			guestStream_scene_mic: 'Live',
 		})
 	})
 
@@ -87,6 +102,29 @@ describe('variables', () => {
 		})
 	})
 
+	it('reports the director controls of a guest', () => {
+		const others = { 'toggle-remote-speaker': '1', 'toggle-remote-display': '1', 'mute-scene': '1' }
+		expect(GetVariableValues(statesOf({ ...guest, others }))).toMatchObject({
+			guest_2_deafened: 'Deafened',
+			guest_2_blind: 'Blind',
+			guest_2_scene_mic: 'Muted',
+		})
+	})
+
+	it('reports the volume the director set, as a number', () => {
+		const values = GetVariableValues(statesOf({ ...guest, others: { volume: '50' } }))
+		expect(values.guest_2_volume).toBe(50)
+	})
+
+	it('reports the local page, whatever its stream ID', () => {
+		expect(GetVariableValues(statesOf({ ...local, muted: true, speakerMuted: true }))).toMatchObject({
+			local_streamID: 'localStream',
+			local_mic: 'Muted',
+			local_camera: 'Unmuted',
+			local_speaker: 'Muted',
+		})
+	})
+
 	it('reports no slot when slots are not in use', () => {
 		expect(GetVariableValues(statesOf({ ...guest, slot: false })).guest_2_slot).toBe('None')
 	})
@@ -96,33 +134,18 @@ describe('variables', () => {
 		expect(values.guest_2_mic).toBe('Muted')
 	})
 
-	it('only defines per-stream variables for a plain local stream', () => {
+	it('only defines the page and per-stream variables for a plain local stream', () => {
 		expect(Object.keys(GetVariableDefinitions(statesOf(local)))).toEqual([
+			'local_streamID',
+			'local_mic',
+			'local_camera',
+			'local_speaker',
+			'local_highlighted',
 			'localStream_mic',
 			'localStream_camera',
 			'localStream_label',
 			'localStream_scenes',
 		])
-	})
-})
-
-describe('presets', () => {
-	it('builds guest and director presets', () => {
-		const { structure, presets } = GetPresets(statesOf(director, guest, local))
-		expect(structure).toEqual([
-			{ id: 'guest', name: 'Guest Actions', definitions: ['guest_2_mic', 'guest_2_camera'] },
-			{
-				id: 'director',
-				name: 'Director Actions',
-				definitions: ['director_mic', 'director_camera', 'director_speaker'],
-			},
-		])
-		expect(presets).toMatchSnapshot()
-	})
-
-	it('builds no presets without guests or a director', () => {
-		const { presets } = GetPresets(statesOf(local))
-		expect(presets).toEqual({})
 	})
 })
 

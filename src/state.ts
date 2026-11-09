@@ -10,6 +10,23 @@ export function isQueued(state: StreamState): boolean {
 	return state.others?.['remove-queue'] === true
 }
 
+/** The director controls VDO.Ninja reports the state of, as '1' or '0', once they have been used */
+export const GuestControls = {
+	deafened: 'toggle-remote-speaker',
+	blind: 'toggle-remote-display',
+	sceneMuted: 'mute-scene',
+} as const
+
+export function isControlOn(state: StreamState, control: keyof typeof GuestControls): boolean {
+	return state.others?.[GuestControls[control]] === '1'
+}
+
+/** The volume set by the director, 0 to 200; a guest it has never changed is reported at 100 */
+export function volumeOf(state: StreamState): number {
+	const volume = Number(state.others?.volume)
+	return Number.isFinite(volume) ? volume : 100
+}
+
 export function isHighlighted(state: StreamState): boolean {
 	return state.featured === true
 }

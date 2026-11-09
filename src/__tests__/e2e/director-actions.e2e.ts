@@ -4,7 +4,7 @@
 import type { Page } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { ActionsSchema } from '../../actions.js'
-import { runAction } from '../helpers/definitions.js'
+import { checkFeedback, runAction } from '../helpers/definitions.js'
 import {
 	eventually,
 	eventuallyWithin,
@@ -148,9 +148,18 @@ describe('director actions against VDO.Ninja', () => {
 	})
 
 	describe('on the guest', () => {
+		it('toggles the guest camera', async () => {
+			await run('guestCamera', { target: '1' })
+			await eventually(() => expect(guest().videoMuted).toBe(true))
+			expect(checkFeedback(harness.client, 'camera', { stream: guestID, state: true })).toBe(true)
+			await run('guestCamera', { target: '1' })
+			await eventually(() => expect(guest().videoMuted).toBe(false))
+		})
+
 		it('toggles the guest mic in scenes', async () => {
 			await run('guestMuteScene', { target: '1', value: '1' })
 			await eventually(() => expect(guest().others?.['mute-scene']).toBe('1'))
+			expect(checkFeedback(harness.client, 'guestSceneMuted', { stream: guestID })).toBe(true)
 			await run('guestMuteScene', { target: '1', value: '1' })
 			await eventually(() => expect(guest().others?.['mute-scene']).toBe('0'))
 		})
@@ -158,6 +167,7 @@ describe('director actions against VDO.Ninja', () => {
 		it('toggles the guest speaker', async () => {
 			await run('guestSpeaker', { target: '1' })
 			await eventually(() => expect(guest().others?.['toggle-remote-speaker']).toBe('1'))
+			expect(checkFeedback(harness.client, 'guestDeafened', { stream: guestID })).toBe(true)
 			expect(harness.results('speaker').at(-1)).toBe(true)
 			await run('guestSpeaker', { target: '1' })
 			await eventually(() => expect(guest().others?.['toggle-remote-speaker']).toBe('0'))
@@ -166,6 +176,7 @@ describe('director actions against VDO.Ninja', () => {
 		it('toggles whether the guest can see video', async () => {
 			await run('guestDisplay', { target: '1' })
 			await eventually(() => expect(guest().others?.['toggle-remote-display']).toBe('1'))
+			expect(checkFeedback(harness.client, 'guestBlind', { stream: guestID })).toBe(true)
 			await run('guestDisplay', { target: '1' })
 			await eventually(() => expect(guest().others?.['toggle-remote-display']).toBe('0'))
 		})
