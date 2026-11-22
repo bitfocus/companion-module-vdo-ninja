@@ -1,10 +1,11 @@
-import type {
-	CompanionButtonStepActions,
-	CompanionPresetDefinitions,
-	CompanionPresetFeedback,
-	CompanionPresetSection,
-	CompanionSimplePresetLocalVariable,
-	WithInternalFeedbacks,
+import {
+	ButtonGraphicsDecorationType,
+	type CompanionButtonStepActions,
+	type CompanionPresetDefinitions,
+	type CompanionPresetFeedback,
+	type CompanionPresetSection,
+	type CompanionSimplePresetLocalVariable,
+	type WithInternalFeedbacks,
 } from '@companion-module/base'
 import { Colors } from './graphics.js'
 import type { ModuleSchema } from './main.js'
@@ -128,6 +129,7 @@ function statusPreset(tile: StatusTile): CompanionPresetDefinitions<ModuleSchema
 			{
 				type: 'layered',
 				...shared,
+				canvas: { decoration: ButtonGraphicsDecorationType.None },
 				elements: [
 					{
 						type: 'composite',
@@ -155,6 +157,7 @@ function statusPreset(tile: StatusTile): CompanionPresetDefinitions<ModuleSchema
 					size: 'auto',
 					color: Colors.white,
 					bgcolor: tile.accent === Colors.idle ? Colors.tile : tile.accent,
+					show_topbar: false,
 				},
 				feedbacks: tile.states.map(({ when, accent }) => ({
 					...when,
@@ -180,6 +183,7 @@ function levelPreset(tile: LevelTile): CompanionPresetDefinitions<ModuleSchema>[
 			{
 				type: 'layered',
 				...shared,
+				canvas: { decoration: ButtonGraphicsDecorationType.None },
 				elements: [
 					{
 						type: 'composite',
@@ -204,6 +208,7 @@ function levelPreset(tile: LevelTile): CompanionPresetDefinitions<ModuleSchema>[
 					size: 'auto',
 					color: Colors.white,
 					bgcolor: Colors.tile,
+					show_topbar: false,
 				},
 			},
 		],
