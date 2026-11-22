@@ -1,6 +1,6 @@
 {
 	"name": "vdo-ninja",
-	"version": "2.5.0",
+	"version": "3.0.0",
 	"main": "dist/main.js",
 	"type": "module",
 	"scripts": {
