@@ -1,0 +1,80 @@
+{
+	"callback": {
+		"target": "null",
+		"value": "null",
+		"action": "getDetails",
+		"cid": 107,
+		"result": {
+			"guestone": {
+				"streamID": "guestone",
+				"label": "Alice",
+				"group": [],
+				"chunkedBufferDefault": 3000,
+				"chunkedBufferOverride": false,
+				"chunkedBufferRequested": 3000,
+				"chunkedBufferCeil": 0,
+				"chunkedBufferAdaptive": true,
+				"slot": false,
+				"featured": false,
+				"iframeSrc": false,
+				"localStream": false,
+				"muted": false,
+				"videoMuted": false,
+				"activeSpeaker": false,
+				"defaultSpeaker": false,
+				"videoVisible": true,
+				"videoVolume": 1,
+				"director": false,
+				"position": 1,
+				"scenes": {
+					"1": false,
+					"2": true,
+					"3": false,
+					"4": false,
+					"5": false,
+					"6": false,
+					"7": false,
+					"8": false
+				},
+				"others": {
+					"volume": "50",
+					"mute-guest": "1",
+					"toggle-remote-display": "1",
+					"hand-raised": false,
+					"remove-queue": false
+				}
+			},
+			"directorstream": {
+				"scenes": {},
+				"featured": false,
+				"label": false,
+				"meta": false,
+				"group": [],
+				"groupView": [],
+				"scene": false,
+				"streamID": "directorstream",
+				"iframeSrc": false,
+				"director": true,
+				"localstream": true,
+				"localStream": true,
+				"seeding": true,
+				"muted": false,
+				"videoMuted": false,
+				"videoVisible": false,
+				"speakerMuted": true,
+				"position": null,
+				"meshcast": false,
+				"layout": false,
+				"outbound": {
+					"v": 0,
+					"a": 0,
+					"c": 1,
+					"s": 0
+				},
+				"screenSharing": false,
+				"audioTrack": false,
+				"videoTrack": false
+			}
+		}
+	}
+}

@@ -1,0 +1,34 @@
+{
+	"callback": {
+		"action": "getDetails",
+		"target": "null",
+		"value": "null",
+		"local": false,
+		"result": {
+			"fixturestream": {
+				"featured": false,
+				"label": "Fixture",
+				"meta": false,
+				"group": [],
+				"groupView": [],
+				"scene": false,
+				"streamID": "fixturestream",
+				"iframeSrc": false,
+				"director": null,
+				"localstream": true,
+				"localStream": true,
+				"seeding": true,
+				"muted": false,
+				"videoMuted": false,
+				"videoVisible": true,
+				"speakerMuted": false,
+				"position": null,
+				"meshcast": false,
+				"layout": false,
+				"screenSharing": false,
+				"audioTrack": true,
+				"videoTrack": true
+			}
+		}
+	}
+}

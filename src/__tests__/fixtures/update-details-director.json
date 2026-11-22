@@ -1,0 +1,45 @@
+{
+	"update": {
+		"streamID": "directorstream",
+		"action": "details",
+		"value": {
+			"guestone": {
+				"streamID": "guestone",
+				"label": "Alice",
+				"group": [],
+				"chunkedBufferDefault": 3000,
+				"chunkedBufferOverride": false,
+				"chunkedBufferRequested": 3000,
+				"chunkedBufferCeil": 0,
+				"chunkedBufferAdaptive": true,
+				"slot": false,
+				"featured": false,
+				"iframeSrc": false,
+				"localStream": false,
+				"muted": false,
+				"videoMuted": false,
+				"activeSpeaker": false,
+				"defaultSpeaker": false,
+				"videoVisible": false,
+				"director": false,
+				"position": 1,
+				"scenes": {
+					"1": false,
+					"2": false,
+					"3": false,
+					"4": false,
+					"5": false,
+					"6": false,
+					"7": false,
+					"8": false
+				},
+				"others": {
+					"volume": "100",
+					"mute-guest": "0",
+					"hand-raised": false,
+					"remove-queue": false
+				}
+			}
+		}
+	}
+}

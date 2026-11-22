@@ -1,31 +1,61 @@
 {
 	"name": "vdo-ninja",
-	"version": "2.5.0",
-	"main": "index.js",
+	"version": "3.0.0",
+	"main": "dist/main.js",
 	"type": "module",
 	"scripts": {
+		"postinstall": "husky",
 		"format": "prettier -w .",
-		"package": "companion-module-build",
+		"package": "run build && companion-module-build",
+		"build": "rimraf dist && run build:main",
+		"build:main": "tsc -p tsconfig.build.json",
+		"check-types": "tsc -p tsconfig.json --noEmit",
+		"dev": "tsc -p tsconfig.build.json --watch",
 		"lint:raw": "eslint",
-		"lint": "yarn lint:raw ."
+		"lint": "run lint:raw .",
+		"test": "vitest --run",
+		"test:watch": "vitest",
+		"test:e2e": "vitest --run --config vitest.e2e.config.ts",
+		"test:e2e:install": "playwright install chromium",
+		"test:e2e:fetch": "git clone --quiet --depth 1 --single-branch --branch v30.2 https://github.com/steveseguin/vdo.ninja.git .vdo-ninja",
+		"test:e2e:local": "VDO_NINJA_DIR=.vdo-ninja vitest --run --config vitest.e2e.config.ts"
 	},
 	"license": "MIT",
 	"dependencies": {
-		"@companion-module/base": "~1.12.1",
-		"ws": "^8.21.0"
+		"@companion-module/base": "~2.2.2",
+		"ws": "^8.23.0"
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/bitfocus/companion-module-vdo-ninja.git"
 	},
 	"devDependencies": {
-		"@companion-module/tools": "^2.8.0",
-		"eslint": "^9.39.1",
-		"prettier": "^3.6.2"
+		"@companion-module/tools": "^3.2.1",
+		"@types/node": "^26.6.6",
+		"@types/ws": "^8.18.2",
+		"@vitest/eslint-plugin": "^1.6.28",
+		"eslint": "^10.15.0",
+		"husky": "^9.1.7",
+		"lint-staged": "^17.6.1",
+		"playwright": "^1.65.1",
+		"prettier": "^3.10.1",
+		"rimraf": "^6.1.4",
+		"typescript": "~6.0.3",
+		"typescript-eslint": "^8.73.0",
+		"vitest": "^4.1.12"
 	},
 	"engines": {
-		"node": "^22.12"
+		"node": "^26",
+		"yarn": "^4"
 	},
 	"prettier": "@companion-module/tools/.prettierrc.json",
-	"packageManager": "yarn@4.11.0"
+	"lint-staged": {
+		"*.{css,json,md,scss}": [
+			"prettier --write"
+		],
+		"*.{ts,tsx,js,jsx}": [
+			"yarn lint:raw --fix"
+		]
+	},
+	"packageManager": "yarn@4.18.1"
 }

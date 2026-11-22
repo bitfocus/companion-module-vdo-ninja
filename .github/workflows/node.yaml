@@ -1,0 +1,68 @@
+name: Node CI
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+  pull_request:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Use Node.js 26.x
+        # This should match the version of Node.js you have defined in the manifest.json runtime field
+        uses: actions/setup-node@v6
+        with:
+          node-version: 26.x
+      - name: Prepare module
+        run: |
+          corepack enable
+          yarn install
+        env:
+          CI: true
+      - name: Build and check types
+        run: |
+          yarn build
+          yarn check-types
+        env:
+          CI: true
+      - name: Run lint
+        run: |
+          yarn lint
+        env:
+          CI: true
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Use Node.js 26.x
+        uses: actions/setup-node@v6
+        with:
+          node-version: 26.x
+      - name: Prepare module
+        run: |
+          corepack enable
+          yarn install
+        env:
+          CI: true
+      # The end-to-end tests (yarn test:e2e) need internet access and Chromium, so they are run by hand
+      - name: Run unit tests
+        run: |
+          yarn test
+        env:
+          CI: true
