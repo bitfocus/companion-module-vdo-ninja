@@ -1,8 +1,8 @@
 # companion-module-vdo-ninja
 
-[HELP.md](./companion/HELP.md) - Getting started information
-[CHANGELOG.md](./companion/CHANGELOG.md) - Version update history
-[LICENSE](./LICENSE)
+- [HELP.md](./companion/HELP.md) - Getting started information
+- [CHANGELOG.md](./companion/CHANGELOG.md) - Version update history
+- [LICENSE](./LICENSE)
 
 ## Development
 
