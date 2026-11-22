@@ -1,17 +1,13 @@
 ## VDO.Ninja
 
-Control [VDO.Ninja](https://vdo.ninja) settings remotely.
+Control [VDO.Ninja](https://vdo.ninja) settings remotely as a director or local guest.
 
 ### Getting Started
 
-- Think of an API ID to use for your production. It should be unique and difficult to guess
+- Determine an API ID to use for your production. It should be unique and difficult to guess as anyone with the API ID can control your VDO.Ninja page
 - Add your API ID as a URL parameter (ex. `&api=your-unique-api-key`) to your VDO.Ninja URL
-- Add the same API ID in the Companion module settings. Anyone with the API ID can control your VDO.Ninja page, so the module keeps it in Companion's secrets store rather than the regular settings
+- Add the same API ID in the connection configuration
 - If you host your own API websocket server, enable **Custom Websockets Server** and enter its domain only (no `wss://`, port or path)
-
-This module needs Companion 5.0 or newer.
-
-If the connection drops, the module reconnects on its own and shows **Disconnected** until it is back. Commands pressed while disconnected are not sent and are noted in the module's log.
 
 ### Available Actions
 
@@ -137,10 +133,6 @@ There are presets for every action, available as soon as the module is added, be
 
 - **Guest buttons follow a position, not a person.** Guest 1's button controls whoever is first in the room, shows their name, and fades while no one is there. When a guest leaves, the others move up a position. To point a button at another guest, change its `guest` local variable.
 - **Colors show real state.** The strip along the bottom turns green or red, for example, as the guest's mic changes. VDO.Ninja doesn't report whether solo talk is on or whether the page is recording, so those buttons can't show it: the Record button shows what its next press does instead.
-- **Hang up, reload and transfer need holding for a second**, so they can't be pressed by accident.
+- **Hang up, reload and transfer need to be held for a second**, so they can't be pressed by accident.
 - **Purple buttons need configuring** after you drag them on: a message to send, a room to transfer to, a bitrate, or a camera setting.
 - **Volume and camera dials** are for rotary encoders. Pressing a volume dial returns it to its default.
-
-These presets draw their graphics with the button elements in Companion 5, and include a simpler version for software that can't draw those. The **Status Tile** and **Level Tile** elements they use are also available to add to your own buttons.
-
-Buttons made from the module's earlier presets keep working and aren't changed.

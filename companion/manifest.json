@@ -2,9 +2,9 @@
 	"$schema": "../node_modules/@companion-module/base/assets/manifest.schema.json",
 	"type": "connection",
 	"id": "vdo-ninja",
-	"name": "vdo-ninja",
+	"name": "VDO.Ninja",
 	"shortname": "VDO.Ninja",
-	"description": "vdo-ninja",
+	"description": "Control VDO.Ninja settings remotely as a director or local guest.",
 	"version": "0.0.0",
 	"license": "MIT",
 	"repository": "git+https://github.com/bitfocus/companion-module-vdo-ninja.git",
@@ -24,5 +24,5 @@
 	},
 	"manufacturer": "VDO",
 	"products": ["Ninja"],
-	"keywords": ["Video"]
+	"keywords": ["Video", "Stream", "WebRTC", "Remote", "Guest", "Director", "Webcam"]
 }
