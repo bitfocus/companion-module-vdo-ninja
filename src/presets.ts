@@ -101,7 +101,7 @@ const guestLabel = {
 	present: guestExpr('streamID'),
 	localVariables: [guestVariable],
 }
-const localLabel = { label: quoted('This page'), labelText: 'This page' }
+const localLabel = { label: quoted('Local'), labelText: 'Local' }
 const directorLabel = { label: quoted('Director'), labelText: 'Director' }
 
 const press = (down: Step['down']): Step[] => [{ down, up: [] }]
@@ -1158,8 +1158,8 @@ export function GetPresets(): {
 		{ id: 'guest_manage', name: 'Guest Management', definitions: guestManage },
 		{
 			id: 'local',
-			name: 'This Page',
-			description: 'Control the VDO.Ninja page the API ID is attached to, whether it is a director or a guest.',
+			name: 'Local',
+			description: 'Control the local page the API ID is attached to, whether it is a director or a guest.',
 			definitions: [
 				{ id: 'local_mutes', type: 'simple', name: 'Mic, camera and speaker', presets: localMutes },
 				{ id: 'local_actions', type: 'simple', name: 'Page', presets: localPage },
