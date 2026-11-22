@@ -1,6 +1,8 @@
 # companion-module-vdo-ninja
 
-See [HELP.md](./companion/HELP.md) and [LICENSE](./LICENSE)
+[HELP.md](./companion/HELP.md) - Getting started information
+[CHANGELOG.md](./companion/CHANGELOG.md) - Version update history
+[LICENSE](./LICENSE)
 
 ## Development
 
