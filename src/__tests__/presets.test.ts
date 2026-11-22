@@ -7,7 +7,6 @@ import type {
 import { describe, expect, it, vi } from 'vitest'
 import { GetActions } from '../actions.js'
 import { GetFeedbacks } from '../feedbacks.js'
-import { GetCompositeElements } from '../graphics.js'
 import { GetPresets } from '../presets.js'
 import { GetVariableDefinitions } from '../variables.js'
 import { director, guest, local, statesOf } from './helpers/streams.js'
@@ -117,24 +116,18 @@ describe('presets', () => {
 		expect(step[1000]).toMatchObject({ options: { runWhileHeld: true } })
 	})
 
-	it('overrides only the options its composite element has', () => {
-		const composites = GetCompositeElements()
-		for (const [id, { layered }] of everything) {
-			const [element] = layered.elements
-			if (element.type !== 'composite') throw new Error(`${id} is not a composite`)
-			const definition = composites[element.elementId as keyof typeof composites]
-			if (!definition) throw new Error(`${id} uses an unknown composite`)
-			const options = definition.options.map((option) => `opt:${option.id}`)
+	it.each(everything)('%s draws tiles as editable elements, not composites', (_id, { layered }) => {
+		expect(layered.elements.length).toBeGreaterThan(1)
+		expect(layered.elements.every((element) => element.type !== 'composite')).toBe(true)
+		expect(layered.elements.map((element) => element.id)).toEqual(
+			expect.arrayContaining(['background', 'label', 'title']),
+		)
 
-			for (const feedback of layered.feedbacks) {
-				for (const override of feedback.styleOverrides) {
-					expect(override.elementId).toBe(element.id)
-					expect(options).toContain(override.elementProperty)
-					// Companion ignores feedback overrides of a composite's text options, so only its colour can change
-					expect(override.elementProperty).toBe('opt:accent')
-				}
+		for (const feedback of layered.feedbacks) {
+			for (const override of feedback.styleOverrides) {
+				expect(override.elementId).toBe('accent')
+				expect(override.elementProperty).toBe('color')
 			}
-			expect(Object.keys(element.options).map((key) => `opt:${key}`)).toEqual(options)
 		}
 	})
 

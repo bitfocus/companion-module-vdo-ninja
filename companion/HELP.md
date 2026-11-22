@@ -136,7 +136,7 @@ For the page the API ID is attached to, whether it is a director or a guest:
 There are presets for every action, available as soon as the module is added, before anything has connected.
 
 - **Guest buttons follow a position, not a person.** Guest 1's button controls whoever is first in the room, shows their name, and fades while no one is there. When a guest leaves, the others move up a position. To point a button at another guest, change its `guest` local variable.
-- **Colours show real state.** The strip along the bottom turns green or red, for example, as the guest's mic changes. VDO.Ninja doesn't report whether solo talk is on or whether the page is recording, so those buttons can't show it: the Record button shows what its next press does instead.
+- **Colors show real state.** The strip along the bottom turns green or red, for example, as the guest's mic changes. VDO.Ninja doesn't report whether solo talk is on or whether the page is recording, so those buttons can't show it: the Record button shows what its next press does instead.
 - **Hang up, reload and transfer need holding for a second**, so they can't be pressed by accident.
 - **Purple buttons need configuring** after you drag them on: a message to send, a room to transfer to, a bitrate, or a camera setting.
 - **Volume and camera dials** are for rotary encoders. Pressing a volume dial returns it to its default.

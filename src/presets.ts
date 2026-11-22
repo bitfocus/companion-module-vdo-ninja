@@ -5,6 +5,7 @@ import {
 	type CompanionPresetFeedback,
 	type CompanionPresetSection,
 	type CompanionSimplePresetLocalVariable,
+	type SomeButtonGraphicsElement,
 	type WithInternalFeedbacks,
 } from '@companion-module/base'
 import { Colors } from './graphics.js'
@@ -29,8 +30,8 @@ type FeedbackOn =
 		: never
 
 /**
- * The colour the tile's status strip takes while a feedback is active; later states win. The status text
- * comes from a variable instead, as Companion doesn't apply feedback overrides to a composite's text options.
+ * The color the tile's status strip takes while a feedback is active; later states win. The status text
+ * comes from a variable instead, so it stays in sync without a separate text override.
  */
 type TileState = {
 	when: FeedbackOn
@@ -46,6 +47,8 @@ type TileBase = {
 	label: string
 	/** The same name as plain text with variables, for hosts without expressions */
 	labelText: string
+	/** Layer-list name for the label element, e.g. "Guest Name" */
+	labelName: string
 	steps: Step[]
 	localVariables?: LocalVariable[]
 	/** Expression that is true when the tile has something to control, otherwise it is drawn faded */
@@ -98,11 +101,12 @@ const guestVariable: LocalVariable = { variableType: 'simple', variableName: 'gu
 const guestLabel = {
 	label: `${guestExpr('label')} || \`Guest \${$(local:guest)}\``,
 	labelText: guestVar('label'),
+	labelName: 'Guest Name',
 	present: guestExpr('streamID'),
 	localVariables: [guestVariable],
 }
-const localLabel = { label: quoted('Local'), labelText: 'Local' }
-const directorLabel = { label: quoted('Director'), labelText: 'Director' }
+const localLabel = { label: quoted('Local'), labelText: 'Local', labelName: 'Local Name' }
+const directorLabel = { label: quoted('Director'), labelText: 'Director', labelName: 'Director Name' }
 
 const press = (down: Step['down']): Step[] => [{ down, up: [] }]
 /** For a rotary encoder: pressing runs `down`, turning runs `left` or `right` */
@@ -114,6 +118,149 @@ const hold = (actions: Step['down']): Step[] => [
 ]
 
 const opacity = (present: string | undefined) => (present ? { opacity: expr(`${present} ? 100 : 40`) } : {})
+
+/** Status tile drawn as editable elements: name, title, and a color status strip */
+function statusElements(tile: StatusTile): SomeButtonGraphicsElement[] {
+	const fade = opacity(tile.present)
+	return [
+		{
+			type: 'box',
+			id: 'background',
+			name: 'Background',
+			x: 0,
+			y: 0,
+			width: 100,
+			height: 100,
+			color: Colors.tile,
+			...fade,
+		},
+		{
+			type: 'text',
+			id: 'label',
+			name: tile.labelName,
+			x: 3,
+			y: 2,
+			width: 94,
+			height: 24,
+			text: expr(tile.label),
+			color: Colors.muted,
+			...fade,
+		},
+		{
+			type: 'text',
+			id: 'title',
+			name: 'Action Title',
+			x: 3,
+			y: 27,
+			width: 94,
+			height: 40,
+			text: tile.title,
+			weight: 'bold',
+			color: Colors.white,
+			...fade,
+		},
+		{
+			type: 'box',
+			id: 'accent',
+			name: 'Status Color',
+			x: 0,
+			y: 70,
+			width: 100,
+			height: 30,
+			color: tile.accent,
+			...fade,
+		},
+		{
+			type: 'text',
+			id: 'status',
+			name: 'Status Text',
+			x: 3,
+			y: 70,
+			width: 94,
+			height: 30,
+			text: expr(tile.status),
+			weight: 'bold',
+			color: Colors.white,
+			...fade,
+		},
+	]
+}
+
+/** Level tile drawn as editable elements: name, ring gauge, value, and title */
+function levelElements(tile: LevelTile): SomeButtonGraphicsElement[] {
+	const fade = opacity(tile.present)
+	return [
+		{
+			type: 'box',
+			id: 'background',
+			name: 'Background',
+			x: 0,
+			y: 0,
+			width: 100,
+			height: 100,
+			color: Colors.tile,
+			...fade,
+		},
+		{
+			type: 'text',
+			id: 'label',
+			name: tile.labelName,
+			x: 3,
+			y: 2,
+			width: 94,
+			height: 24,
+			text: expr(tile.label),
+			color: Colors.muted,
+			...fade,
+		},
+		{
+			type: 'gauge',
+			id: 'ring',
+			name: 'Level Ring',
+			x: 18,
+			y: 27,
+			width: 64,
+			height: 71,
+			orientation: 'ring',
+			min: 0,
+			max: tile.max,
+			value: expr(tile.value),
+			startAngle: 225,
+			endAngle: 135,
+			ringWidth: 16,
+			multiColour: false,
+			stops: [{ value: 0, color: tile.accent, gradient: false }],
+			trackStyle: 'dimmed',
+			trackAmount: 25,
+			...fade,
+		},
+		{
+			type: 'text',
+			id: 'value',
+			name: 'Level Value',
+			x: 25,
+			y: 44,
+			width: 50,
+			height: 26,
+			text: expr(tile.value),
+			weight: 'bold',
+			color: Colors.white,
+			...fade,
+		},
+		{
+			type: 'text',
+			id: 'title',
+			name: 'Level Title',
+			x: 25,
+			y: 70,
+			width: 50,
+			height: 18,
+			text: tile.title,
+			color: Colors.muted,
+			...fade,
+		},
+	]
+}
 
 function statusPreset(tile: StatusTile): CompanionPresetDefinitions<ModuleSchema>[string] {
 	const shared = {
@@ -130,23 +277,10 @@ function statusPreset(tile: StatusTile): CompanionPresetDefinitions<ModuleSchema
 				type: 'layered',
 				...shared,
 				canvas: { decoration: ButtonGraphicsDecorationType.None },
-				elements: [
-					{
-						type: 'composite',
-						id: 'tile',
-						elementId: 'statusTile',
-						...opacity(tile.present),
-						options: {
-							label: expr(tile.label),
-							title: tile.title,
-							status: expr(tile.status),
-							accent: tile.accent,
-						},
-					},
-				],
+				elements: statusElements(tile),
 				feedbacks: tile.states.map(({ when, accent }) => ({
 					...when,
-					styleOverrides: [{ elementId: 'tile', elementProperty: 'opt:accent', override: accent }],
+					styleOverrides: [{ elementId: 'accent', elementProperty: 'color', override: accent }],
 				})),
 			},
 			{
@@ -184,21 +318,7 @@ function levelPreset(tile: LevelTile): CompanionPresetDefinitions<ModuleSchema>[
 				type: 'layered',
 				...shared,
 				canvas: { decoration: ButtonGraphicsDecorationType.None },
-				elements: [
-					{
-						type: 'composite',
-						id: 'tile',
-						elementId: 'levelTile',
-						...opacity(tile.present),
-						options: {
-							label: expr(tile.label),
-							title: tile.title,
-							value: expr(tile.value),
-							max: tile.max,
-							accent: tile.accent,
-						},
-					},
-				],
+				elements: levelElements(tile),
 			},
 			{
 				type: 'simple',
